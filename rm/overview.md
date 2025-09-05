@@ -29,3 +29,37 @@ Data extraction criteria:
 - Extract the main findings and contributions of each paper.
 - Extract any limitations or future work suggested by the authors.
  -->
+
+ ## Motivation 
+
+ ## Problem statement 
+
+ # OVerview of graph embedding methods 
+
+ ## Static graph embeddings
+
+## Dynamic graph embeddings
+
+# Types of graphs in software engineering
+## Control flow graphs
+## Call graphs
+## Dependency graphs
+## Other types of graphs
+
+# Distance metrics for graph embeddings
+
+# Scalability of graph embedding techniques
+
+# Applications in software engineering
+## Bug prediction
+## Code recommendation
+## Vulnerability detection
+## Other applications
+
+# Comparison of graph embedding techniques and their effectiveness in software engineering tasks
+
+# Challenges and future directions
+
+# Conclusion
+
+# References
