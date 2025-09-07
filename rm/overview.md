@@ -1,3 +1,6 @@
+---
+bibliography: ./refs.bib
+---
 
 # Introduction 
 
