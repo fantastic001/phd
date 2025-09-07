@@ -33,13 +33,13 @@ Data extraction criteria:
 - Extract any limitations or future work suggested by the authors.
  -->
 
- ## Motivation 
+## Motivation 
 
- ## Problem statement 
+## Problem statement 
 
- # OVerview of graph embedding methods 
+# Overview of graph embedding methods
 
- ## Static graph embeddings
+## Static graph embeddings
 
 ## Dynamic graph embeddings
 
