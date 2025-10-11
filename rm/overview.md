@@ -75,9 +75,13 @@ One of the most well-known static graph embedding technique is Node2Vec [@grover
 
 Another popular static graph embedding is DistGER [@fang_distributed_2023] which extends random walk sampling to account increased information gain by considering the neighbors of the sampled nodes. This approach aims to capture more comprehensive structural information from the graph, leading to improved embedding quality. This paper also introduces a distributed training framework to handle large-scale graphs efficiently.
 
+Another static graph embedding technique is LINE [@tang_line_2015] which is designed to handle large-scale information networks. LINE optimizes an objective function that preserves both local and global network structures, making it suitable for various types of graphs, including undirected, directed, and weighted graphs. The method employs an edge-sampling algorithm to improve the efficiency of the training process, allowing it to scale to networks with millions of nodes and billions of edges.
+
 
 
 ## Dynamic graph embeddings
+
+
 
 # Types of graphs in software engineering
 ## Control flow graphs
@@ -88,6 +92,24 @@ Another popular static graph embedding is DistGER [@fang_distributed_2023] which
 # Distance metrics for graph embeddings
 
 # Scalability of graph embedding techniques
+
+In order to handle large-scale graphs, graph can be partitioned into smaller subgraphs $ G_1, G_2, \ldots, G_k$ such that $G = \bigcup_{i=1}^{k} G_i$. Each subgraph can be embedded independently, and the resulting embeddings can be combined to form the final embedding for the entire graph. This approach allows for parallel processing and reduces the computational complexity of embedding large graphs.
+
+Graph partitioning is NP-hard problem which is optimization problem thet involves dividing a graph into smaller subgraphs while minimizing the number of edges between the subgraphs and ensuring that each subgraph is of roughly equal size.
+
+Over the years, several partitioning algorithms have been presented in the literature. Some of them are based on evolutionary algorithms while others use spectral clustering or modularity optimization. The choice of partitioning algorithm can significantly impact the quality of the resulting embeddings, as it determines how well the subgraphs capture the structural properties of the original graph.
+
+
+
+The most notable evolutionary algorithm for graph partitioning is the memetic algorithm presented in [@romero_ruiz_memetic_2018] which combines genetic algorithm with local search technique. It uses Hungarian algorithm to solve the assignment problem during the crossover operation, ensuring that the offspring inherit the best traits from their parents. The local search technique is applied to refine the partitions and improve the overall quality of the solution.
+
+Another multilevel memetic algorithm is presented in [@benlic_effective_2010] which introduces a novel recombination operator that combines the best features of two parent partitions to create an offspring partition. The algorithm also incorporates a local search technique to refine the partitions and improve the overall quality of the solution. Although this approach has been shown to be computationally expensive, it produces high-quality partitions.
+
+Apart from evolutionary algorithms, in real networks which often exhibit community structures, community detection with balancing algorithm can be used. For instance, detecting communities using LFM algorithm [@lancichinetti_detecting_2009] and then creating balanced partitions by using a bin packing algorithm [@gupta_new_1999]. This approach leverages the inherent community structure of real-world graphs to create partitions that are both balanced and have a low number of inter-partition edges.
+
+In case of dynamic graphs, there are several algorithms that have been proposed. For instance, adaptive partitioning [@vaquero_adaptive_2013] where at each iteration of vertex creation or removal, the algorithm checks if the current partitioning is still optimal. If not, it re-partitions the graph to ensure that the partitions remain balanced and the number of edges between partitions is minimized. Repartitioning is done through vertex migration, where vertices are moved from one partition to another to improve the overall quality of the partitioning.
+
+
 
 # Applications in software engineering
 ## Bug prediction
