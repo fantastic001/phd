@@ -81,6 +81,12 @@ Another static graph embedding technique is LINE [@tang_line_2015] which is desi
 
 ## Dynamic graph embeddings
 
+For dynamic graphs, there is dynamic version of Node2Vec [@mahdavi_dynnode2vec_2018] which extends the original Node2Vec algorithm to handle dynamic graphs by updating the embeddings incrementally as the graph evolves. The method uses a combination of random walks and temporal information to capture the changes in the graph structure over time, allowing for efficient updates to the node embeddings without retraining from scratch.
+
+Most recent papers on dynamic graph embedding focus more on building self-attention layers inspired by transformer models like [@sankar_dysat_2020] and [@wang_apan_2021] which use attention mechanisms to capture the temporal dependencies and structural information in dynamic graphs. These methods typically involve learning node embeddings through a series of attention layers that aggregate information from neighboring nodes and previous time steps, allowing for the modeling of complex temporal patterns in the graph data.
+
+Other models make use of variational recurrent neural networks like [@hajiramezanali_variational_2019] which combines variational autoencoders with recurrent neural networks to learn dynamic graph embeddings. The model captures the temporal evolution of the graph by modeling the latent representations of nodes and edges over time. 
+
 
 
 # Types of graphs in software engineering
