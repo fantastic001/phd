@@ -90,12 +90,24 @@ Other models make use of variational recurrent neural networks like [@hajirameza
 
 
 # Types of graphs in software engineering
-## Control flow graphs
-## Call graphs
-## Dependency graphs
-## Other types of graphs
 
-# Distance metrics for graph embeddings
+In this section, several types of graphs commonly used in software engineering are discussed, along with their characteristics and applications.
+
+## Control flow graphs and call graphs
+
+Control flow graphs (CFGs) are directed graphs that represent the flow of control within a program. In a CFG, nodes represent basic blocks of code, and edges represent the control flow between these blocks. CFGs are widely used in various software engineering tasks, such as program analysis, optimization, and testing. 
+
+A call graph is a directed graph that represents the calling relationships between functions in a program. In a call graph, nodes represent functions, and edges represent calls from one function to another. Call graphs are useful for understanding the structure of a program, identifying performance bottlenecks, and optimizing function inlining.
+
+Control-flow graphs and call graphs are successfully used as a representation method of a program for software watermarking [@chroni_embedding_2012]. 
+
+## Dependency graphs
+
+A dependency graph is a directed graph that represents the dependencies between various components of a software system, such as modules, classes, or functions. In a dependency graph, nodes represent the components, and edges represent the dependencies between them. Dependency graphs are useful for analyzing the structure of a software system, identifying potential issues, and managing changes in the codebase. 
+
+In object-oriented design, dependency graphs can play a huge role in identifying design flaws [@chatzigeorgiou_application_2006]. 
+
+## Other types of graphs
 
 # Scalability of graph embedding techniques
 
@@ -118,12 +130,30 @@ In case of dynamic graphs, there are several algorithms that have been proposed.
 
 
 # Applications in software engineering
+
+In the Table 1, an overview of various applications of graph embeddings in software engineering is provided. Each application is briefly described, along with the specific graph embedding techniques used and the relevant references.
+
+| Application | Graph representation | Embedding technique | References |
+|-------------|----------------------|---------------------|------------|
+| Design pattern detection | Dependency graphs | Node2Vec, LINE, DistGER | [@chatzigeorgiou_application_2006] |
+
+
+
+## Design pattern detection
+
+As pointed out in [@chatzigeorgiou_application_2006], design patterns are typical solutions to common problems in software design. They provide a way to reuse successful designs and architectures, making it easier to develop and maintain complex software systems. In mentioned paper, graph similarity was used to identify which design pattern was used. Similarly, embedding methods can map nodes to a vector space where node similarity can be measured using distance metrics like cosine similarity or Euclidean distance. This allows for efficient comparison of nodes and identification of similar patterns in the graph.
+
 ## Bug prediction
+
+
+
 ## Code recommendation
 ## Vulnerability detection
 ## Other applications
 
-# Comparison of graph embedding techniques and their effectiveness in software engineering tasks
+
+
+
 
 # Challenges and future directions
 
