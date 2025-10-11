@@ -5,6 +5,10 @@
 	author = {Grover, Aditya and Leskovec, Jure},
 	year = {2016},
 	pages = {855--864},
+	annote = {Description
+Uses random walks to generate training data which is given to underlying word2vec model in order to create vertex embeddings.
+This is static graph embedding technique.
+},
 }
 
 @inproceedings{lombardo_scalable_2019,
@@ -14,30 +18,6 @@
 	author = {Lombardo, Gianfranco and Poggi, Agostino},
 	year = {2019},
 	pages = {134--141},
-}
-
-@article{fang_distributed_2023,
-	title = {Distributed {Graph} {Embedding} with {Information}-{Oriented} {Random} {Walks}},
-	journal = {arXiv preprint arXiv:2303.15702},
-	author = {Fang, Peng and Khan, Arijit and Luo, Siqiang and Wang, Fang and Feng, Dan and Li, Zhenli and Yin, Wei and Cao, Yuchao},
-	year = {2023},
-}
-
-@article{anil_large_2018,
-	title = {Large scale distributed neural network training through online distillation},
-	journal = {arXiv preprint arXiv:1804.03235},
-	author = {Anil, Rohan and Pereyra, Gabriel and Passos, Alexandre and Ormandi, Robert and Dahl, George E and Hinton, Geoffrey E},
-	year = {2018},
-}
-
-@article{gupta_distributed_2018,
-	title = {Distributed learning of deep neural network over multiple agents},
-	volume = {116},
-	journal = {Journal of Network and Computer Applications},
-	author = {Gupta, Otkrist and Raskar, Ramesh},
-	year = {2018},
-	note = {Publisher: Elsevier},
-	pages = {1--8},
 }
 
 @article{church_word2vec_2017,
@@ -62,42 +42,6 @@
 	pages = {452--473},
 }
 
-@article{leskovec_community_2009,
-	title = {Community structure in large networks: {Natural} cluster sizes and the absence of large well-defined clusters},
-	volume = {6},
-	number = {1},
-	journal = {Internet Mathematics},
-	author = {Leskovec, Jure and Lang, Kevin J and Dasgupta, Anirban and Mahoney, Michael W},
-	year = {2009},
-	note = {Publisher: Taylor \& Francis},
-	pages = {29--123},
-}
-
-@article{abbe_community_2018,
-	title = {Community detection and stochastic block models: recent developments},
-	volume = {18},
-	number = {177},
-	journal = {Journal of Machine Learning Research},
-	author = {Abbe, Emmanuel},
-	year = {2018},
-	pages = {1--86},
-}
-
-@article{lancichinetti_detecting_2009,
-	title = {Detecting the overlapping and hierarchical community structure in complex networks},
-	volume = {11},
-	issn = {1367-2630},
-	url = {http://dx.doi.org/10.1088/1367-2630/11/3/033015},
-	doi = {10.1088/1367-2630/11/3/033015},
-	number = {3},
-	journal = {New Journal of Physics},
-	author = {Lancichinetti, Andrea and Fortunato, Santo and Kertész, János},
-	month = mar,
-	year = {2009},
-	note = {Publisher: IOP Publishing},
-	pages = {033015},
-}
-
 @misc{yip_restore_2023,
 	title = {{RESTORE}: {Graph} {Embedding} {Assessment} {Through} {Reconstruction}},
 	url = {https://arxiv.org/abs/2308.14659},
@@ -106,7 +50,7 @@
 	note = {\_eprint: 2308.14659},
 }
 
-@article{lancichinetti_detecting_2009-1,
+@article{lancichinetti_detecting_2009,
 	title = {Detecting the overlapping and hierarchical community structure in complex networks},
 	volume = {11},
 	number = {3},
@@ -122,6 +66,7 @@
 	author = {Rozemberczki, Benedek and Sarkar, Rik},
 	year = {2021},
 	note = {\_eprint: 2101.03091},
+	keywords = {twitch},
 }
 
 @misc{apache_software_foundation_zookeeper_2011,
@@ -130,17 +75,7 @@
 	author = {{Apache Software Foundation}},
 	year = {2011},
 	keywords = {zookeeper},
-}
-
-@article{gupta_new_1999,
-	title = {A new heuristic algorithm for the one-dimensional bin-packing problem},
-	volume = {10},
-	number = {6},
-	journal = {Production planning \& control},
-	author = {Gupta, Jatinder ND and Ho, Johnny C},
-	year = {1999},
-	note = {Publisher: Taylor \& Francis},
-	pages = {598--603},
+	annote = {letzter Zugriff: 11. Oktober 2011},
 }
 
 @inproceedings{adamic_political_2005,
@@ -149,16 +84,6 @@
 	author = {Adamic, Lada A and Glance, Natalie},
 	year = {2005},
 	pages = {36--43},
-}
-
-@article{hubert_comparing_1985,
-	title = {Comparing partitions},
-	volume = {2},
-	journal = {Journal of classification},
-	author = {Hubert, Lawrence and Arabie, Phipps},
-	year = {1985},
-	note = {Publisher: Springer},
-	pages = {193--218},
 }
 
 @article{watts_collective_1998,
@@ -170,13 +95,6 @@
 	year = {1998},
 	note = {Publisher: Nature Publishing Group},
 	pages = {440--442},
-}
-
-@book{bondy_graph_2008,
-	title = {Graph theory},
-	publisher = {Springer Publishing Company, Incorporated},
-	author = {Bondy, John Adrian and Murty, Uppaluri Siva Ramachandra},
-	year = {2008},
 }
 
 @book{van_der_hofstad_random_2024,
@@ -207,41 +125,6 @@
 	pages = {195--216},
 }
 
-@inproceedings{perozzi_deepwalk_2014,
-	title = {Deepwalk: {Online} learning of social representations},
-	booktitle = {Proceedings of the 20th {ACM} {SIGKDD} international conference on {Knowledge} discovery and data mining},
-	author = {Perozzi, Bryan and Al-Rfou, Rami and Skiena, Steven},
-	year = {2014},
-	pages = {701--710},
-}
-
-@inproceedings{tang_line_2015,
-	title = {Line: {Large}-scale information network embedding},
-	booktitle = {Proceedings of the 24th international conference on world wide web},
-	author = {Tang, Jian and Qu, Meng and Wang, Mingzhe and Zhang, Ming and Yan, Jun and Mei, Qiaozhu},
-	year = {2015},
-	pages = {1067--1077},
-}
-
-@article{hamilton_inductive_2017,
-	title = {Inductive representation learning on large graphs},
-	volume = {30},
-	journal = {Advances in neural information processing systems},
-	author = {Hamilton, Will and Ying, Zhitao and Leskovec, Jure},
-	year = {2017},
-}
-
-@article{zhu_high-order_2018,
-	title = {High-order proximity preserved embedding for dynamic networks},
-	volume = {30},
-	number = {11},
-	journal = {IEEE Transactions on Knowledge and Data Engineering},
-	author = {Zhu, Dingyuan and Cui, Peng and Zhang, Ziwei and Pei, Jian and Zhu, Wenwu},
-	year = {2018},
-	note = {Publisher: IEEE},
-	pages = {2134--2144},
-}
-
 @article{huang_leopard_2016,
 	title = {Leopard: {Lightweight} edge-oriented partitioning and replication for dynamic graphs},
 	volume = {9},
@@ -270,7 +153,7 @@
 	pages = {1917--1928},
 }
 
-@article{fang_distributed_2023-1,
+@article{fang_distributed_2023,
 	title = {Distributed graph embedding with information-oriented random walks},
 	journal = {arXiv preprint arXiv:2303.15702},
 	author = {Fang, Peng and Khan, Arijit and Luo, Siqiang and Wang, Fang and Feng, Dan and Li, Zhenli and Yin, Wei and Cao, Yuchao},
@@ -323,10 +206,11 @@
 	booktitle = {Proceedings of the 12th {ACM} {SIGKDD} international conference on {Knowledge} discovery and data mining},
 	author = {Backstrom, Lars and Huttenlocher, Dan and Kleinberg, Jon and Lan, Xiangyang},
 	year = {2006},
+	keywords = {live journal},
 	pages = {44--54},
 }
 
-@article{leskovec_community_2009-1,
+@article{leskovec_community_2009,
 	title = {Community structure in large networks: {Natural} cluster sizes and the absence of large well-defined clusters},
 	volume = {6},
 	number = {1},
@@ -343,6 +227,7 @@
 	booktitle = {{AAAI}},
 	author = {Rossi, Ryan A. and Ahmed, Nesreen K.},
 	year = {2015},
+	keywords = {uk2002},
 }
 
 @inproceedings{leskovec_signed_2010,
@@ -350,6 +235,7 @@
 	booktitle = {Proceedings of the {SIGCHI} conference on human factors in computing systems},
 	author = {Leskovec, Jure and Huttenlocher, Daniel and Kleinberg, Jon},
 	year = {2010},
+	keywords = {wiki talks},
 	pages = {1361--1370},
 }
 
@@ -358,6 +244,7 @@
 	booktitle = {Proceedings of the 19th international conference on {World} wide web},
 	author = {Leskovec, Jure and Huttenlocher, Daniel and Kleinberg, Jon},
 	year = {2010},
+	keywords = {wiki talks},
 	pages = {641--650},
 }
 
@@ -768,6 +655,7 @@
 	year = {2020},
 	note = {arXiv:2007.01231 [cs]},
 	keywords = {Computer Science - Machine Learning, Computer Science - Software Engineering, Statistics - Machine Learning},
+	annote = {Comment: 11 pages, 1 figure. 37th International Conference on Machine Learning (ICML 2020) - Workshop on Graph Representation Learning and Beyond},
 	file = {Preprint PDF:/Users/stefan/Zotero/storage/CN3XIASU/2020 Ahrabian, Tarlow, Cheng, Guo - Software Engineering Event Modeling using Relative Time in Temporal Knowledge Graphs.pdf:application/pdf;Snapshot:/Users/stefan/Zotero/storage/82JGMS44/2007.html:text/html},
 }
 
@@ -910,4 +798,45 @@ Our research on the innovation of knowledge graph in software engineering and th
 	author = {Bhattacharya, Pamela and Iliofotou, Marios and Neamtiu, Iulian and Faloutsos, Michalis},
 	year = {2012},
 	pages = {419--429},
+}
+
+@article{raghavan_near_2007,
+	title = {Near linear time algorithm to detect community structures in large-scale networks},
+	volume = {76},
+	issn = {1550-2376},
+	url = {http://dx.doi.org/10.1103/PhysRevE.76.036106},
+	doi = {10.1103/physreve.76.036106},
+	number = {3},
+	journal = {Physical Review E},
+	author = {Raghavan, Usha Nandini and Albert, Réka and Kumara, Soundar},
+	month = sep,
+	year = {2007},
+	note = {Publisher: American Physical Society (APS)},
+}
+
+@article{gupta_new_1999,
+	title = {A new heuristic algorithm for the one-dimensional bin-packing problem},
+	volume = {10},
+	number = {6},
+	journal = {Production planning \& control},
+	author = {Gupta, Jatinder ND and Ho, Johnny C},
+	year = {1999},
+	note = {Publisher: Taylor \& Francis},
+	pages = {598--603},
+}
+
+@book{martella_practical_2015,
+	title = {Practical graph analytics with apache giraph},
+	volume = {1},
+	publisher = {Springer},
+	author = {Martella, Claudio and Shaposhnik, Roman and Logothetis, Dionysios and Harenberg, Steve},
+	year = {2015},
+}
+
+@inproceedings{vinh_information_2009,
+	title = {Information theoretic measures for clusterings comparison: is a correction for chance necessary?},
+	booktitle = {Proceedings of the 26th annual international conference on machine learning},
+	author = {Vinh, Nguyen Xuan and Epps, Julien and Bailey, James},
+	year = {2009},
+	pages = {1073--1080},
 }
