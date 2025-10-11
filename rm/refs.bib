@@ -34,6 +34,7 @@ This is static graph embedding technique.
 @article{zachary_information_1977,
 	title = {An information flow model for conflict and fission in small groups},
 	volume = {33},
+	abstract = {Data from a voluntary association are used to construct a new formal model for a traditional anthropological problem, fission in small groups. The process leading to fission is viewed as an unequal flow of sentiments and information across the ties in a social network. This flow is unequal because it is uniquely constrained by the contextual range and sensitivity of each relationship in the network. The subsequent differential sharing of sentiments leads to the formation of subgroups with more internal stability than the group as a whole, and results in fission. The Ford-Fulkerson labeling algorithm allows an accurate prediction of membership in the subgroups and of the locus of the fission to be made from measurements of the potential for information flow across each edge in the network. Methods for measurement of potential information flow are discussed, and it is shown that all appropriate techniques will generate the same predictions.},
 	number = {4},
 	journal = {Journal of anthropological research},
 	author = {Zachary, Wayne W},
@@ -125,6 +126,15 @@ This is static graph embedding technique.
 	pages = {195--216},
 }
 
+@inproceedings{tang_line_2015,
+	title = {Line: {Large}-scale information network embedding},
+	abstract = {This paper studies the problem of embedding very large information networks into low-dimensional vector spaces, which is useful in many tasks such as visualization, node classification, and link prediction. Most existing graph embedding methods do not scale for real world information networks which usually contain millions of nodes. In this paper, we propose a novel network embedding method called the ``LINE,'' which is suitable for arbitrary types of information networks: undirected, directed, and/or weighted. The method optimizes a carefully designed objective function that preserves both the local and global network structures. An edge-sampling algorithm is proposed that addresses the limitation of the classical stochastic gradient descent and improves both the effectiveness and the efficiency of the inference. Empirical experiments prove the effectiveness of the LINE on a variety of real-world information networks, including language networks, social networks, and citation networks. The algorithm is very efficient, which is able to learn the embedding of a network with millions of vertices and billions of edges in a few hours on a typical single machine. The source code of the LINE is available online{\textbackslash}footnote\{{\textbackslash}url\{https://github.com/tangjianpku/LINE\}\}.},
+	booktitle = {Proceedings of the 24th international conference on world wide web},
+	author = {Tang, Jian and Qu, Meng and Wang, Mingzhe and Zhang, Ming and Yan, Jun and Mei, Qiaozhu},
+	year = {2015},
+	pages = {1067--1077},
+}
+
 @article{huang_leopard_2016,
 	title = {Leopard: {Lightweight} edge-oriented partitioning and replication for dynamic graphs},
 	volume = {9},
@@ -155,6 +165,7 @@ This is static graph embedding technique.
 
 @article{fang_distributed_2023,
 	title = {Distributed graph embedding with information-oriented random walks},
+	abstract = {Graph embedding maps graph nodes to low-dimensional vectors, and is widely adopted in machine learning tasks. The increasing availability of billion-edge graphs underscores the importance of learning efficient and effective embeddings on large graphs, such as link prediction on Twitter with over one billion edges. Most existing graph embedding methods fall short of reaching high data scalability. In this paper, we present a general-purpose, distributed, information-centric random walk-based graph embedding framework, DistGER, which can scale to embed billion-edge graphs. DistGER incrementally computes information-centric random walks. It further leverages a multi-proximity-aware, streaming, parallel graph partitioning strategy, simultaneously achieving high local partition quality and excellent workload balancing across machines. DistGER also improves the distributed Skip-Gram learning model to generate node embeddings by optimizing the access locality, CPU throughput, and synchronization efficiency. Experiments on real-world graphs demonstrate that compared to state-of-the-art distributed graph embedding frameworks, including KnightKing, DistDGL, and Pytorch-BigGraph, DistGER exhibits 2.33x-129x acceleration, 45\% reduction in cross-machines communication, and {\textgreater} 10\% effectiveness improvement in downstream tasks.},
 	journal = {arXiv preprint arXiv:2303.15702},
 	author = {Fang, Peng and Khan, Arijit and Luo, Siqiang and Wang, Fang and Feng, Dan and Li, Zhenli and Yin, Wei and Cao, Yuchao},
 	year = {2023},
