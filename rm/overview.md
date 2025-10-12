@@ -81,6 +81,8 @@ Another static graph embedding technique is LINE [@tang_line_2015] which is desi
 
 SDNE [@wang_structural_2016] is another static graph embedding technique that uses deep autoencoders to learn node representations. SDNE uses deep neural networks to capture the non-linear relationships in the graph, allowing for more expressive embeddings. The method incorporates both first-order and second-order proximity to preserve the local and global structures of the graph.
 
+When graph represents multiple different types of relationships between nodes, then heterogeneous graph embedding techniques can be used like HERec [@shi_heterogeneous_2018] which is designed to handle heterogeneous graphs with multiple types of nodes and edges. HERec uses meta-path-based random walks to capture the complex relationships in heterogeneous graphs, allowing for more informative embeddings. The method employs a two-level embedding approach, where node embeddings are learned at both the node type level and the overall graph level.
+
 ## Dynamic graph embeddings
 
 For dynamic graphs, there is dynamic version of Node2Vec [@mahdavi_dynnode2vec_2018] which extends the original Node2Vec algorithm to handle dynamic graphs by updating the embeddings incrementally as the graph evolves. The method uses a combination of random walks and temporal information to capture the changes in the graph structure over time, allowing for efficient updates to the node embeddings without retraining from scratch.
@@ -109,7 +111,6 @@ A dependency graph is a directed graph that represents the dependencies between 
 
 In object-oriented design, dependency graphs can play a huge role in identifying design flaws [@chatzigeorgiou_application_2006]. 
 
-## Other types of graphs
 
 # Scalability of graph embedding techniques
 
@@ -140,7 +141,7 @@ In the Table 1, an overview of various applications of graph embeddings in softw
 | Design pattern detection | Dependency graphs | Node2Vec, LINE, DistGER | [@chatzigeorgiou_application_2006] |
 | Bug prediction | Dependency graphs | Node2Vec, LINE, SDNE | [@qu_node2defect_2018] [@qu_node2defect_2018] | 
 | Malware detection | Call graphs | Spectral methods | [@hashemi_graph_2017] | 
-
+| Class name recommendation | Dependency graphs, Call graphs | HERec | [@kurimoto_class_2019] |
 
 ## Design pattern detection
 
@@ -150,12 +151,10 @@ As pointed out in [@chatzigeorgiou_application_2006], design patterns are typica
 
 Bug prediction is a crucial task in software engineering that aims to identify potential defects in software systems before they manifest as actual bugs. By leveraging graph embeddings, it is possible to capture the structural and relational information of software components, enabling more accurate predictions of bug-prone areas in the codebase. In [@qu_node2defect_2018], the authors propose a method for predicting software defects using Node2Vec embeddings of dependency graphs. The approach involves constructing a dependency graph from the class dependencies in the codebase and then generating node embeddings using several state-of-the-art graph embedding techniques, including Node2Vec, LINE, and SDNE. The resulting embeddings are concatenated with traditional software metrics to form a comprehensive feature set for each class. These features are then used to train a machine learning model to predict the likelihood of defects in the classes. Models such as Random Forest, Logistic Regression, and Support Vector Machines are employed for the prediction task. 
 
-## Code recommendation
+## Class name recommendation
 
+Class name recommendation is an important task in software engineering that aims to suggest meaningful and descriptive names for classes based on their functionality and relationships with other classes. In [@kurimoto_class_2019], the authors propose a method for recommending class names using HERec embeddings of heterogeneous graphs. The approach involves constructing a heterogeneous graph from the class dependencies and method calls in the codebase, where nodes represent classes and methods, and edges represent the relationships between them. The results show that the proposed method outperforms several baseline approaches like rule-based models. 
 
-
-
-## Other applications
 
 
 
