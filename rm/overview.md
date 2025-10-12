@@ -181,14 +181,24 @@ CWE is database of software weaknesses that can lead to buggy behavior or securi
 
 Code search is an important task in software engineering that aims to retrieve relevant code snippets based on a given query. In [@zou_graph_2018], the authors propose a method for code search using LINE embeddings of dependency graphs and call graphs. The approach involves constructing a graph from the codebase, where nodes represent functions and classes, and edges represent the dependencies and calls between them. The authors use LINE to generate embeddings for the nodes in the graph. Evaluation was performed on Java code snippets and natural language queries. 
 
+# Evolution of software projects
+
+In [@bhattacharya_graph-based_2012], the authors analyzed software project evolution by analyzing graph topology over time for several open source projects. They analyzed code evolution as well as process-related artifacts like bug reports and version control commits. They found that software evolution exhibits certain patterns which can be used as predictors of future changes, defects and maintenance needs.
+
+
+
 # Challenges and future directions
 
 <!-- scalability of graph embedding techniques -->
-<!-- temporal graph embedding  -->
 
-<!-- software evolution -->
+Currently, most of the embedding techniques are not scalable to large graphs which can limits their applicability to real-world enterprise software projects or whole organizations. 
+
+Another challenge is the dynamic nature of software systems, which can change over time due to updates, bug fixes, and new feature additions. This requires embedding techniques to be able to adapt to these changes and incorporate new information into the embeddings. Reviewed papers rarely utilize dynamic graph embedding techniques even though software systems are inherently dynamic and snapshots of software at different points in time can be found in version control systems and represented as temporal graphs.
 
 <!-- new applications for static graph embedding -->
+
+Also, there is a need for more comprehensive datasets and benchmarks to evaluate the performance of graph embedding techniques in software engineering tasks. This includes datasets that capture the complexity and diversity of real-world software systems, as well as benchmarks that allow for fair comparisons between different embedding techniques. This includes static and dynamic graphs representing software systems in different programming languages and paradigms.
+
 
 
 # Conclusion
