@@ -43,11 +43,11 @@ Today, software systems are becoming increasingly complex, making it challenging
 
 Despite their potential, the application of graph embeddings in software engineering is still an emerging area of research. There is a need for a comprehensive review of the existing literature to identify the state-of-the-art techniques, their applications, and the challenges that remain to be addressed.
 
-In [@wang_application_2023], the authors provide a survey of applications of knowledge graphs in software engineering. 
 
-Also, [@wang_survey_2022] provides a comprehensive survey of graph embedding methods used when graph nodes and links have their own attributes.
+There are several surveys on graph embedding techniques and their applications in various domains. For instance [@xu_understanding_2021] provides a listing of several graph embedding techniques and their applications in social networks, citation networks, biological networks and genome analysis.
 
 
+In [@wang_survey_2022], the authors provide a survey of vast majority of graph embedding techniques and also mention some notable deployments in industry. They also mention several open source datasets which can be used for benchmarking graph embedding techniques. Similarly, in [@wang_application_2023], the authors provide a comprehensive survey of several applications of knowledge graphs in the field of software engineering, including software testing, bug prediction, and code recommendation. 
 
 ## Problem statement 
 
