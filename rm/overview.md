@@ -4,6 +4,8 @@ author: "Stefan Nožinić"
 date: "`r Sys.Date()`"
 email: "stefan@lugons.org"
 bibliography: ./refs.bib
+abstract: |
+    While graph embeddings have been widely studied in various domains, their application in software engineering is still an emerging area of research. This paper presents a systematic review of graph embedding techniques with applications in software engineering. The review focuses on identifying the state-of-the-art methods, their effectiveness in various software engineering tasks, and the challenges that need to be addressed for further advancements in this field. The findings suggest that graph embeddings have the potential to significantly improve the performance of machine learning models in software engineering tasks, such as bug prediction, code recommendation, and vulnerability detection. However, there are still several challenges that need to be addressed, including scalability, interpretability, and the need for more comprehensive datasets and benchmarks.
 ---
 
 # Introduction 
@@ -162,6 +164,16 @@ Class name recommendation is an important task in software engineering that aims
 
 # Challenges and future directions
 
+<!-- scalability of graph embedding techniques -->
+<!-- temporal graph embedding  -->
+
+<!-- software evolution -->
+
+<!-- new applications for static graph embedding -->
+
+
 # Conclusion
+
+This paper presents a systematic review of graph embedding techniques with applications in software engineering. The review highlights the state-of-the-art methods, their effectiveness in various software engineering tasks, and the challenges that need to be addressed for further advancements in this field. The findings suggest that graph embeddings have the potential to significantly improve the performance of machine learning models in software engineering tasks, such as bug prediction, code recommendation, and vulnerability detection. However, there are still several challenges that need to be addressed, including scalability, interpretability, and the need for more comprehensive datasets and benchmarks.
 
 # References
