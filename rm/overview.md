@@ -71,13 +71,15 @@ This paper aims to systematically review the existing literature on graph embedd
 
 ## Static graph embeddings
 
+One of the first attempts to embed graph nodes into a continuous vector space was presented in [@belkin_laplacian_2003] [@cheng_spectral_2020] where the authors proposed a method based on spectral graph theory. The method involves computing the eigenvectors of the graph Laplacian matrix and using them as the embedding vectors for the nodes. The approach aims to preserve the local structure of the graph by minimizing the distance between connected nodes in the embedding space. Formally, the graph Laplacian matrix $L$ is defined as $L = D - A$, where $D$ is the degree matrix and $A$ is the adjacency matrix of the graph. The eigenvectors corresponding to the smallest non-zero eigenvalues of $L$ are used as the embedding vectors. To construct the embedding $f(v_i)$ for a node $v_i$, the $i$-th row of the matrix formed by these eigenvectors can be taken. Disadvantages of this method include its computational complexity, which can be prohibitive for large graphs, and its sensitivity to noise and outliers in the graph structure.
+
 One of the most well-known static graph embedding technique is Node2Vec [@grover_node2vec_2016] which extends the Word2Vec model [@church_word2vec_2017] to graphs by using random walks to generate node sequences. Node2Vec introduces two parameters, $p$ and $q$, to control the breadth-first and depth-first search strategies during the random walks, allowing for flexible exploration of the graph structure. Node2Vec was also extended to be more scalable by [@lombardo_scalable_2019].
 
 Another popular static graph embedding is DistGER [@fang_distributed_2023] which extends random walk sampling to account increased information gain by considering the neighbors of the sampled nodes. This approach aims to capture more comprehensive structural information from the graph, leading to improved embedding quality. This paper also introduces a distributed training framework to handle large-scale graphs efficiently.
 
 Another static graph embedding technique is LINE [@tang_line_2015] which is designed to handle large-scale information networks. LINE optimizes an objective function that preserves both local and global network structures, making it suitable for various types of graphs, including undirected, directed, and weighted graphs. The method employs an edge-sampling algorithm to improve the efficiency of the training process, allowing it to scale to networks with millions of nodes and billions of edges.
 
-
+SDNE [@wang_wang_structural_2016] is another static graph embedding technique that uses deep autoencoders to learn node representations. SDNE uses deep neural networks to capture the non-linear relationships in the graph, allowing for more expressive embeddings. The method incorporates both first-order and second-order proximity to preserve the local and global structures of the graph.
 
 ## Dynamic graph embeddings
 
@@ -136,7 +138,8 @@ In the Table 1, an overview of various applications of graph embeddings in softw
 | Application | Graph representation | Embedding technique | References |
 |-------------|----------------------|---------------------|------------|
 | Design pattern detection | Dependency graphs | Node2Vec, LINE, DistGER | [@chatzigeorgiou_application_2006] |
-
+| Bug prediction | Dependency graphs | Node2Vec, LINE, SDNE | [@qu_node2defect_2018] [@qu_node2defect_2018] | 
+| Malware detection | Call graphs | Spectral methods | [@hashemi_graph_2017] | 
 
 
 ## Design pattern detection
@@ -145,10 +148,13 @@ As pointed out in [@chatzigeorgiou_application_2006], design patterns are typica
 
 ## Bug prediction
 
-
+Bug prediction is a crucial task in software engineering that aims to identify potential defects in software systems before they manifest as actual bugs. By leveraging graph embeddings, it is possible to capture the structural and relational information of software components, enabling more accurate predictions of bug-prone areas in the codebase. In [@qu_node2defect_2018], the authors propose a method for predicting software defects using Node2Vec embeddings of dependency graphs. The approach involves constructing a dependency graph from the class dependencies in the codebase and then generating node embeddings using several state-of-the-art graph embedding techniques, including Node2Vec, LINE, and SDNE. The resulting embeddings are concatenated with traditional software metrics to form a comprehensive feature set for each class. These features are then used to train a machine learning model to predict the likelihood of defects in the classes. Models such as Random Forest, Logistic Regression, and Support Vector Machines are employed for the prediction task. 
 
 ## Code recommendation
-## Vulnerability detection
+
+
+
+
 ## Other applications
 
 
