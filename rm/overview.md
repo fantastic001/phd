@@ -79,7 +79,7 @@ Another popular static graph embedding is DistGER [@fang_distributed_2023] which
 
 Another static graph embedding technique is LINE [@tang_line_2015] which is designed to handle large-scale information networks. LINE optimizes an objective function that preserves both local and global network structures, making it suitable for various types of graphs, including undirected, directed, and weighted graphs. The method employs an edge-sampling algorithm to improve the efficiency of the training process, allowing it to scale to networks with millions of nodes and billions of edges.
 
-SDNE [@wang_wang_structural_2016] is another static graph embedding technique that uses deep autoencoders to learn node representations. SDNE uses deep neural networks to capture the non-linear relationships in the graph, allowing for more expressive embeddings. The method incorporates both first-order and second-order proximity to preserve the local and global structures of the graph.
+SDNE [@wang_structural_2016] is another static graph embedding technique that uses deep autoencoders to learn node representations. SDNE uses deep neural networks to capture the non-linear relationships in the graph, allowing for more expressive embeddings. The method incorporates both first-order and second-order proximity to preserve the local and global structures of the graph.
 
 ## Dynamic graph embeddings
 
