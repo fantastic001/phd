@@ -305,6 +305,11 @@ This is static graph embedding technique.
 
 @inproceedings{vaquero_adaptive_2013,
 	title = {Adaptive partitioning for large-scale dynamic graphs},
+	abstract = {Mining large-scale graphs is increasingly important, as it provides a powerful way of extracting useful information from real-world data. Efficient processing of that volume of information requires partitioning the graph across multiple nodes in a distributed system. However, traversing edges across distributed partitions results in significant performance penalty due to the additional cost of inter-partition communication. Minimising the number of cut edges between partitions improves communication cost between neighbouring vertices; balanced graph partitioning is required for load balancing [2].
+These large graphs represent real-world information, which is inherently dynamic. Recent systems such as Kineograph [1] can process changing graphs, but they do not consider the impact of dynamism in graph partitioning. To illustrate this impact, we built a call graph from mobile Call Detail Records data, with a sliding window defining the creation and removal of nodes and edges. The graph was partitioned using three different techniques: modulo hash (HSH), the most popular partitioning technique because of its high scalability to produce balanced partitions, [2]; a state of art streaming partition technique (deterministic greedy, DTG) [3]; and our adaptive repartitioning heuristic, (ADP). Figure 1 shows the evolution of the partitioning (expressed as the ratio of edges that cut across different partitions). While a good partitioning strategy significantly improves the initial ratio of cuts, the quality of the partitioning degrades over time, resulting in higher communication penalty.
+In order to prevent this performance degradation, current approaches would require a full graph repartition, which can be extremely costly with large-scale graphs, and generate downtime gaps in the system. While this problem does not deeply affect batch processing systems, it can greatly impact throughput and latency of graph processing systems requiring faster response times. We propose an adaptive approach, where the graph is optimised with every change, over computation execution.
+We improve graph partitioning in a scalable manner by applying a local decision heuristic, based on decentralised, iterative vertex migration. The heuristic [4] migrates vertices between partitions trying to minimise the number of cut edges, while at the same time keeping partitions balanced upon structural changes at run time.
+We tested this approach in a system that processes dynamic graphs and adapts to graph changes by applying the iterative vertex migration algorithm. While continuous migrations bring added overhead to the computation, we observed in several experiments that the total execution time was reduced by over 50\%. A more detailed analysis of the system and experiments is available at [4].},
 	booktitle = {Proceedings of the 4th annual {Symposium} on {Cloud} {Computing}},
 	author = {Vaquero, Luis and Cuadrado, Felix and Logothetis, Dionysios and Martella, Claudio},
 	year = {2013},
@@ -314,6 +319,7 @@ This is static graph embedding technique.
 @article{romero_ruiz_memetic_2018,
 	title = {Memetic algorithm with hungarian matching based crossover and diversity preservation},
 	volume = {22},
+	abstract = {The Graph Partitioning Problem (GPP) is a well-known NP-hard combinatorial problem that involves the finding of a partition of vertexes that minimizes the number of cut edges while fulfilling a set of constraints. This paper presents a newly designed optimizer for the GPP: the Memetic Algorithm with Hungarian Matching Based Crossover and Diversity Preservation (MAHMBCDP). MAHMBCDP is a population-based scheme that incorporates an explicit mechanism to control the diversity with the aim of making a proper use of resources when dealing with long-term executions. Among the novelties of our proposal, the design of a crossover operator that is based on the Hungarian Algorithm to calculate a maximum matching is particularly important. Experimental validation with a set of well-known instances of the graph partitioning archive shows the proper performance of our proposal. In fact, new best-known solutions could be attained in ten test cases.},
 	number = {2},
 	journal = {Computación y Sistemas},
 	author = {Romero Ruiz, Emmanuel and Segura, Carlos},
@@ -334,6 +340,7 @@ This is static graph embedding technique.
 @inproceedings{benlic_effective_2010,
 	title = {An effective multilevel memetic algorithm for balanced graph partitioning},
 	volume = {1},
+	abstract = {The balanced graph partitioning consists in dividing the vertices of an undirected graph into a given number of subsets of approximately equal size, such that the number of edges crossing the subsets is minimized. In this work, we present a multilevel memetic algorithm for this NP-hard problem that relies on a powerful grouping recombination operator and a dedicated local search procedure. The proposed operator tends to preserve the backbone with respect to a set of parent individuals, i.e. the grouping of vertices which is same throughout each parent individual. Although our approach requires significantly longer computing time compared to some current state-of-art graph partitioning algorithms such as SCOTCH, METIS, CHACO, JOSTLE, etc., it competes very favorably with these approaches in terms of solution quality. Moreover, it easily reaches or improves on the best partitions ever reported in the literature.},
 	booktitle = {2010 22nd {IEEE} international conference on tools with artificial intelligence},
 	publisher = {IEEE},
 	author = {Benlic, Una and Hao, Jin-Kao},
@@ -761,6 +768,7 @@ This is static graph embedding technique.
 
 @inproceedings{mahdavi_dynnode2vec_2018,
 	title = {dynnode2vec: {Scalable} dynamic network embedding},
+	abstract = {Network representation learning in low dimensional vector space has attracted considerable attention in both academic and industrial domains. Most real-world networks are dynamic with addition/deletion of nodes and edges. The existing graph embedding methods are designed for static networks and they cannot capture evolving patterns in a large dynamic network. In this paper, we propose a dynamic embedding method, dynnode2vec, based on the well-known graph embedding method node2vec. Node2vec is a random walk based embedding method for static networks. Applying static network embedding in dynamic settings has two crucial problems: 1) Generating random walks for every time step is time consuming 2) Embedding vector spaces in each timestamp are different. In order to tackle these challenges, dynnode2vec uses evolving random walks and initializes the current graph embedding with previous embedding vectors. We demonstrate the advantages of the proposed dynamic network embedding by conducting empirical evaluations on several large dynamic network datasets.},
 	booktitle = {2018 {IEEE} international conference on big data ({Big} {Data})},
 	publisher = {IEEE},
 	author = {Mahdavi, Sedigheh and Khoshraftar, Shima and An, Aijun},
@@ -850,4 +858,62 @@ Our research on the innovation of knowledge graph in software engineering and th
 	author = {Vinh, Nguyen Xuan and Epps, Julien and Bailey, James},
 	year = {2009},
 	pages = {1073--1080},
+}
+
+@article{cheng_spectral_2020,
+	title = {Spectral embedding norm: {Looking} deep into the spectrum of the graph {Laplacian}},
+	volume = {13},
+	number = {2},
+	journal = {SIAM journal on imaging sciences},
+	author = {Cheng, Xiuyuan and Mishne, Gal},
+	year = {2020},
+	note = {Publisher: SIAM},
+	pages = {1015--1048},
+}
+
+@article{belkin_laplacian_2003,
+	title = {Laplacian eigenmaps for dimensionality reduction and data representation},
+	volume = {15},
+	number = {6},
+	journal = {Neural computation},
+	author = {Belkin, Mikhail and Niyogi, Partha},
+	year = {2003},
+	note = {Publisher: MIT Press},
+	pages = {1373--1396},
+}
+
+@inproceedings{wang_structural_2016,
+	title = {Structural deep network embedding},
+	abstract = {Network embedding is an important method to learn low-dimensional
+representations of vertexes in networks, aiming to capture and pre-
+serve the network structure. Almost all the existing network em-
+bedding methods adopt shallow models. However, since the under-
+lying network structure is complex, shallow models cannot capture
+the highly non-linear network structure, resulting in sub-optimal
+network representations. Therefore, how to find a method that is
+able to effectively capture the highly non-linear network structure
+and preserve the global and local structure is an open yet impor-
+tant problem. To solve this problem, in this paper we propose a
+Structural Deep Network Embedding method, namely SDNE. More
+specifically, we first propose a semi-supervised deep model, which
+has multiple layers of non-linear functions, thereby being able to
+capture the highly non-linear network structure. Then we propose
+to exploit the first-order and second-order proximity jointly to p-
+reserve the network structure. The second-order proximity is used
+by the unsupervised component to capture the global network struc-
+ture. While the first-order proximity is used as the supervised infor-
+mation in the supervised component to preserve the local network
+structure. By jointly optimizing them in the semi-supervised deep
+model, our method can preserve both the local and global network
+structure and is robust to sparse networks. Empirically, we conduct
+the experiments on five real-world networks, including a language
+network, a citation network and three social networks. The results
+show that compared to the baselines, our method can reconstruc-
+t the original network significantly better and achieves substantial
+gains in three applications, i.e. multi-label classification, link pre-
+diction and visualization.},
+	booktitle = {Proceedings of the 22nd {ACM} {SIGKDD} international conference on {Knowledge} discovery and data mining},
+	author = {Wang, Daixin and Cui, Peng and Zhu, Wenwu},
+	year = {2016},
+	pages = {1225--1234},
 }
