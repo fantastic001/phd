@@ -156,6 +156,8 @@ In the Table 1, an overview of various applications of graph embeddings in softw
 | Malware detection | Call graphs | Spectral methods | [@hashemi_graph_2017] | 
 | Class name recommendation | Dependency graphs, Call graphs | HERec | [@kurimoto_class_2019] |
 | Code weakness reasoning | Knowledge graphs | TransE | [@han_deepweak_2018] |
+| Code search | Dependency graphs, call graphs | LINE | [@zou_graph_2018] |
+
 
 ## Design pattern detection
 
@@ -175,6 +177,9 @@ Class name recommendation is an important task in software engineering that aims
 
 CWE is database of software weaknesses that can lead to buggy behavior or security vulnerabilities. In [@han_deepweak_2018], the authors propose a method for embedding CWE entities in order to predict new relationships between entities. This means that if a certain weakness documented, it is possible to predict its consequences or related weaknesses even if they are not explicitly documented. The approach involves constructing a knowledge graph from the CWE database, where nodes represent weaknesses, consequences, and related weaknesses, and edges represent the relationships between them. The authors use TransE to generate embeddings for the entities in the knowledge graph. The resulting embeddings are then used to train a machine learning model to predict new relationships between entities. In their paper, authors combine the knowledge graph embedding and word embedding of textual descriptions of weaknesses to improve the quality of the embeddings. The results show that the proposed method outperforms several baseline approaches.
 
+## Code search
+
+Code search is an important task in software engineering that aims to retrieve relevant code snippets based on a given query. In [@zou_graph_2018], the authors propose a method for code search using LINE embeddings of dependency graphs and call graphs. The approach involves constructing a graph from the codebase, where nodes represent functions and classes, and edges represent the dependencies and calls between them. The authors use LINE to generate embeddings for the nodes in the graph. Evaluation was performed on Java code snippets and natural language queries. 
 
 # Challenges and future directions
 
