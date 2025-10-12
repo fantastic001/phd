@@ -85,6 +85,11 @@ SDNE [@wang_structural_2016] is another static graph embedding technique that us
 
 When graph represents multiple different types of relationships between nodes, then heterogeneous graph embedding techniques can be used like HERec [@shi_heterogeneous_2018] which is designed to handle heterogeneous graphs with multiple types of nodes and edges. HERec uses meta-path-based random walks to capture the complex relationships in heterogeneous graphs, allowing for more informative embeddings. The method employs a two-level embedding approach, where node embeddings are learned at both the node type level and the overall graph level.
 
+
+When graph represents knowledge graph, where nodes represent entities and edges represent relationships between entities, then knowledge graph embedding techniques can be used like TransE [@bordes_translating_2013] which is designed to embed entities and relationships in a knowledge graph into a continuous vector space. TransE represents relationships as translations in the embedding space, allowing for efficient modeling of multi-relational data. The method optimizes an objective function that encourages the embeddings of related entities to be close together in the embedding space. Formally, for a triplet $(h, r, t)$ representing a head entity $h$, a relation $r$, and a tail entity $t$, TransE aims to satisfy the condition $f(h) + f(r) \approx f(t)$, where $f$ is the embedding function. It minimizes the margin-based ranking loss to ensure that valid triplets have lower energy than invalid ones.
+
+
+
 ## Dynamic graph embeddings
 
 For dynamic graphs, there is dynamic version of Node2Vec [@mahdavi_dynnode2vec_2018] which extends the original Node2Vec algorithm to handle dynamic graphs by updating the embeddings incrementally as the graph evolves. The method uses a combination of random walks and temporal information to capture the changes in the graph structure over time, allowing for efficient updates to the node embeddings without retraining from scratch.
@@ -113,6 +118,12 @@ A dependency graph is a directed graph that represents the dependencies between 
 
 In object-oriented design, dependency graphs can play a huge role in identifying design flaws [@chatzigeorgiou_application_2006]. 
 
+
+## Knowledge graphs
+
+Usually, in representing descriptive information about knowledge, where knowledge is represented as a set of entities and relationships between them, knowledge graphs are used. In a knowledge graph, nodes represent entities, and edges represent the relationships between them. Knowledge graphs are widely used in various applications, such as information retrieval, recommendation systems, and natural language processing. One of the most notable advantages of knowledge graphs is their ability to represent different types of relationships between entities.
+
+One example of knowledge graph is Freebase [@bollacker_freebase_2008] which is a large-scale knowledge graph that contains millions of entities and relationships. Freebase was used in various applications, such as question answering and recommendation systems.
 
 # Scalability of graph embedding techniques
 
@@ -144,6 +155,7 @@ In the Table 1, an overview of various applications of graph embeddings in softw
 | Bug prediction | Dependency graphs | Node2Vec, LINE, SDNE | [@qu_node2defect_2018] [@qu_node2defect_2018] | 
 | Malware detection | Call graphs | Spectral methods | [@hashemi_graph_2017] | 
 | Class name recommendation | Dependency graphs, Call graphs | HERec | [@kurimoto_class_2019] |
+| Code weakness reasoning | Knowledge graphs | TransE | [@han_deepweak_2018] |
 
 ## Design pattern detection
 
@@ -159,7 +171,9 @@ Class name recommendation is an important task in software engineering that aims
 
 
 
+## Code weakness detection
 
+CWE is database of software weaknesses that can lead to buggy behavior or security vulnerabilities. In [@han_deepweak_2018], the authors propose a method for embedding CWE entities in order to predict new relationships between entities. This means that if a certain weakness documented, it is possible to predict its consequences or related weaknesses even if they are not explicitly documented. The approach involves constructing a knowledge graph from the CWE database, where nodes represent weaknesses, consequences, and related weaknesses, and edges represent the relationships between them. The authors use TransE to generate embeddings for the entities in the knowledge graph. The resulting embeddings are then used to train a machine learning model to predict new relationships between entities. In their paper, authors combine the knowledge graph embedding and word embedding of textual descriptions of weaknesses to improve the quality of the embeddings. The results show that the proposed method outperforms several baseline approaches.
 
 
 # Challenges and future directions
