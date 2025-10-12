@@ -185,17 +185,16 @@ Code search is an important task in software engineering that aims to retrieve r
 
 In [@bhattacharya_graph-based_2012], the authors analyzed software project evolution by analyzing graph topology over time for several open source projects. They analyzed code evolution as well as process-related artifacts like bug reports and version control commits. They found that software evolution exhibits certain patterns which can be used as predictors of future changes, defects and maintenance needs.
 
+There are several datasets available for studying software project evolution like [@ahrabian_software_2020] which provides a collection of software project evolution datasets extracted from version control systems available as open source. The datasets include knowledge-graphs representing various relationships along with evaluation of several graph embedding techniques on them.
 
 
 # Challenges and future directions
 
-<!-- scalability of graph embedding techniques -->
 
 Currently, most of the embedding techniques are not scalable to large graphs which can limits their applicability to real-world enterprise software projects or whole organizations. 
 
 Another challenge is the dynamic nature of software systems, which can change over time due to updates, bug fixes, and new feature additions. This requires embedding techniques to be able to adapt to these changes and incorporate new information into the embeddings. Reviewed papers rarely utilize dynamic graph embedding techniques even though software systems are inherently dynamic and snapshots of software at different points in time can be found in version control systems and represented as temporal graphs.
 
-<!-- new applications for static graph embedding -->
 
 Also, there is a need for more comprehensive datasets and benchmarks to evaluate the performance of graph embedding techniques in software engineering tasks. This includes datasets that capture the complexity and diversity of real-world software systems, as well as benchmarks that allow for fair comparisons between different embedding techniques. This includes static and dynamic graphs representing software systems in different programming languages and paradigms.
 
@@ -203,6 +202,6 @@ Also, there is a need for more comprehensive datasets and benchmarks to evaluate
 
 # Conclusion
 
-This paper presents a systematic review of graph embedding techniques with applications in software engineering. The review highlights the state-of-the-art methods, their effectiveness in various software engineering tasks, and the challenges that need to be addressed for further advancements in this field. The findings suggest that graph embeddings have the potential to significantly improve the performance of machine learning models in software engineering tasks, such as bug prediction, code recommendation, and vulnerability detection. However, there are still several challenges that need to be addressed, including scalability, interpretability, and the need for more comprehensive datasets and benchmarks.
+This paper presents a systematic review of graph embedding techniques with applications in software engineering. The review highlights the state-of-the-art methods, their effectiveness in various software engineering tasks, and the challenges that need to be addressed for further advancements in this field. The findings suggest that graph embeddings have the potential to significantly improve the software analysis and process improvements. However, there are still several challenges that need to be addressed, including scalability, adaptability to dynamic changes, and the need for more comprehensive datasets and benchmarks.
 
 # References
