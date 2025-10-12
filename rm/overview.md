@@ -1,7 +1,7 @@
 ---
 title: "Graph Embedding Techniques with Applications in Software Engineering: A Systematic Literature Review"
 author: "Stefan Nožinić"
-date: "`r Sys.Date()`"
+date: "2025-10-12"
 email: "stefan@lugons.org"
 bibliography: ./refs.bib
 abstract: |
