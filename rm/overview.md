@@ -177,7 +177,7 @@ In the Table 1, an overview of various applications of graph embeddings in softw
 | Application | Graph representation | Embedding technique | References |
 |-------------|----------------------|---------------------|------------|
 | Design pattern detection | Dependency graphs | Node2Vec, LINE, DistGER | [@chatzigeorgiou_application_2006] |
-| Bug prediction | Dependency graphs | Node2Vec, LINE, SDNE | [@qu_node2defect_2018] [@qu_node2defect_2018] | 
+| Bug prediction | Dependency graphs | Node2Vec, LINE, SDNE | [@qu_node2defect_2018] |
 | Malware detection | Call graphs | Spectral methods | [@hashemi_graph_2017] | 
 | Class name recommendation | Dependency graphs, Call graphs | HERec | [@kurimoto_class_2019] |
 | Code weakness reasoning | Knowledge graphs | TransE | [@han_deepweak_2018] |
@@ -237,7 +237,15 @@ Most applications reviewed in this paper are focused on static graph embeddings,
 
 Main two applications are concerned around helping developers in design and implementation phase by recommending design patterns and class names. Another important application is bug prediction and vulnerability detection which can help improve software quality and security.
 
+Table 2 provides a summary of applications and number of reviewed papers in each application area.
 
+| Application Area | Number of Reviewed Papers |
+|------------------|--------------------------|
+| Design and implementation support | 3 |
+| Bug prediction and vulnerability detection | 3 |
+Table: Summary of applications and number of reviewed papers
+
+As can be seen from the table, the most common application areas are design and implementation support, as well as bug prediction and vulnerability detection. These applications highlight the potential of graph embeddings to improve software development processes and enhance software quality.
 
 # Challenges and future directions
 
