@@ -199,6 +199,15 @@ In [@bhattacharya_graph-based_2012], the authors analyzed software project evolu
 
 There are several datasets available for studying software project evolution like [@ahrabian_software_2020] which provides a collection of software project evolution datasets extracted from version control systems available as open source. The datasets include knowledge-graphs representing various relationships along with evaluation of several graph embedding techniques on them.
 
+# Discussion
+
+When it comes to static graph embeddings, Node2Vec and LINE are the most commonly used techniques in software engineering applications. Node2Vec is particularly effective in capturing the local structure of the graph, making it suitable for tasks such as bug prediction and design pattern detection. LINE, on the other hand, is designed to handle large-scale graphs and preserves both local and global structures, making it suitable for applications like code search.
+
+Dynamic graph embeddings are less commonly used in software engineering applications, with most reviewed papers focusing on static graph embeddings. However, dynamic graph embeddings have the potential to capture the temporal evolution of software systems, making them suitable for tasks such as bug prediction and code recommendation.
+
+The most commonly used graph representations in software engineering applications are dependency graphs and call graphs. Dependency graphs are particularly useful for capturing the relationships between software components, making them suitable for tasks such as design pattern detection and bug prediction. Call graphs, on the other hand, are useful for understanding the structure of a program, making them suitable for applications like malware detection.
+
+Knowledge graphs are also used in software engineering applications, particularly for tasks such as code weakness reasoning. Knowledge graphs provide a rich representation of entities and relationships, making them suitable for capturing complex relationships in software systems. Embedding techniques like TransE are effective in capturing the relational information in knowledge graphs, so they are used as embedding technique in such applications instead of more general techniques like Node2Vec or LINE.
 
 # Challenges and future directions
 
