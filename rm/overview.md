@@ -169,7 +169,7 @@ In the Table 1, an overview of various applications of graph embeddings in softw
 | Class name recommendation | Dependency graphs, Call graphs | HERec | [@kurimoto_class_2019] |
 | Code weakness reasoning | Knowledge graphs | TransE | [@han_deepweak_2018] |
 | Code search | Dependency graphs, call graphs | LINE | [@zou_graph_2018] |
-
+Table: Overview of graph embedding applications in software engineering
 
 ## Design pattern detection
 
@@ -199,7 +199,7 @@ In [@bhattacharya_graph-based_2012], the authors analyzed software project evolu
 
 There are several datasets available for studying software project evolution like [@ahrabian_software_2020] which provides a collection of software project evolution datasets extracted from version control systems available as open source. The datasets include knowledge-graphs representing various relationships along with evaluation of several graph embedding techniques on them.
 
-# Discussion
+# Results and discussion
 
 When it comes to static graph embeddings, Node2Vec and LINE are the most commonly used techniques in software engineering applications. Node2Vec is particularly effective in capturing the local structure of the graph, making it suitable for tasks such as bug prediction and design pattern detection. LINE, on the other hand, is designed to handle large-scale graphs and preserves both local and global structures, making it suitable for applications like code search.
 
@@ -208,6 +208,21 @@ Dynamic graph embeddings are less commonly used in software engineering applicat
 The most commonly used graph representations in software engineering applications are dependency graphs and call graphs. Dependency graphs are particularly useful for capturing the relationships between software components, making them suitable for tasks such as design pattern detection and bug prediction. Call graphs, on the other hand, are useful for understanding the structure of a program, making them suitable for applications like malware detection.
 
 Knowledge graphs are also used in software engineering applications, particularly for tasks such as code weakness reasoning. Knowledge graphs provide a rich representation of entities and relationships, making them suitable for capturing complex relationships in software systems. Embedding techniques like TransE are effective in capturing the relational information in knowledge graphs, so they are used as embedding technique in such applications instead of more general techniques like Node2Vec or LINE.
+
+In table 2, a summary of the effectiveness of different graph embedding techniques in various software engineering tasks is provided. The table highlights the strengths and weaknesses of each technique, along with their suitability for specific applications.
+
+| Graph Embedding Technique | Strengths | Weaknesses | Applications |
+|--------------------------|-----------|------------|-----------------------|
+| Node2Vec | Captures local structure, flexible exploration of graph | Expensive for large graphs in terms of time and memory | Bug prediction, design pattern detection |
+| LINE | Scalable to large graphs, preserves local and global structures | May not capture fine-grained relationships | Code search, malware detection |
+| SDNE | Captures non-linear relationships, expressive embeddings | Requires deep neural networks, computationally intensive | Bug prediction |
+| HERec | Handles heterogeneous graphs, captures complex relationships | Requires meta-path design | Class name recommendation |
+| TransE | Efficient modeling of multi-relational data | May not capture complex relationships | Code weakness reasoning |
+Table: Summary of graph embedding techniques in software engineering applications
+
+Most applications reviewed in this paper are focused on static graph embeddings, with limited use of dynamic graph embeddings. This is likely due to the complexity of dynamic graph embedding techniques and the lack of available datasets for evaluating their performance in software engineering tasks. However, as software systems continue to evolve and change over time, there is a growing need for dynamic graph embeddings that can capture these temporal changes.
+
+
 
 # Challenges and future directions
 
