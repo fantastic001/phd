@@ -60,6 +60,9 @@ Knowledge graph embeddings are surveyed in [@ge_knowledge_2024] where the author
 
 
 
+## Objective 
+
+This paper aims to systematically review the existing literature on graph embedding techniques with applications in software engineering. The review will focus on identifying the state-of-the-art methods, their effectiveness in various software engineering tasks, and the challenges that need to be addressed for further advancements in this field.
 
 
 ## Problem statement 
@@ -67,6 +70,7 @@ Knowledge graph embeddings are surveyed in [@ge_knowledge_2024] where the author
 A graph is a mathematical structure defined as tuple $G = (V, E)$, where $V$ is a set of vertices (or nodes) and $E$ is a set of edges (or links) connecting pairs of vertices. Graphs can be directed or undirected, weighted or unweighted, and can represent various types of relationships between entities.
 
 Also, nodes in a graph can have attributes or features associated with them, which can provide additional information about the entities they represent. Graphs can be static, where the structure remains unchanged over time, or dynamic, where the structure evolves as nodes and edges are added or removed.
+
 
 For dynamic graphs, the graph at time $t$ can be represented as $G_t = (V_t, E_t)$, where $V_t$ and $E_t$ are the sets of vertices and edges at time $t$. Dynamic graphs can capture temporal changes in relationships and interactions, making them suitable for modeling evolving systems.
 
@@ -76,9 +80,6 @@ Graph embeddings are techniques that aim to represent the nodes, edges, or entir
 
 Formally, a graph embedding can be defined as a mapping function $f: V \rightarrow \mathbb{R}^d$, where $d$ is the dimensionality of the embedding space. The embedding should preserve the proximity and relationships between nodes in the original graph, such that nodes that are close or connected in the graph are also close in the embedding space.
 
-## Scope 
-
-This paper aims to systematically review the existing literature on graph embedding techniques with applications in software engineering. The review will focus on identifying the state-of-the-art methods, their effectiveness in various software engineering tasks, and the challenges that need to be addressed for further advancements in this field.
 
 # Overview of graph embedding methods
 
