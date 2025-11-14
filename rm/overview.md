@@ -39,17 +39,28 @@ Data extraction criteria:
 - Extract any limitations or future work suggested by the authors.
  -->
 
-## Motivation and related work
+## Motivation 
 
 Today, software systems are becoming increasingly complex, making it challenging to analyze and understand their structure and behavior. Graphs provide a natural way to represent the relationships and interactions within software systems, such as control flow [@cheng_static_2019], function calls, and dependencies [@lyu_embedding_2021]. When represented as graphs, software systems can be analyzed using various graph-based techniques, including graph embeddings [@gedeon_embedding_2019]. Graph embeddings are a powerful tool for transforming graph-structured data into a continuous vector space, enabling the application of machine learning algorithms to graph data. 
 
 Despite their potential, the application of graph embeddings in software engineering is still an emerging area of research. There is a need for a comprehensive review of the existing literature to identify the state-of-the-art techniques, their applications, and the challenges that remain to be addressed.
 
+## Related work 
 
 There are several surveys on graph embedding techniques and their applications in various domains. For instance [@xu_understanding_2021] provides a listing of several graph embedding techniques and their applications in social networks, citation networks, biological networks and genome analysis.
 
 
 In [@wang_survey_2022], the authors provide a survey of vast majority of graph embedding techniques and also mention some notable deployments in industry. They also mention several open source datasets which can be used for benchmarking graph embedding techniques. Similarly, in [@wang_application_2023], the authors provide a comprehensive survey of several applications of knowledge graphs in the field of software engineering, including software testing, bug prediction, and code recommendation. 
+
+There are also several surveys which focus specifically on formal definition of graph embedding techniques like [@cai_comprehensive_2018] where the authors provide a comprehensive survey of graph embedding techniques along with some challenges and future directions in this field. 
+
+When it comes to more specific areas like biomedical networks, [@chen_literature_2020] provides a survey of graph embedding techniques and their applications in biomedical data analysis. The authors discuss various graph embedding methods and their effectiveness in tasks such as drug discovery, disease prediction, and protein function prediction along with several public datasets.
+
+Knowledge graph embeddings are surveyed in [@ge_knowledge_2024] where the authors provide a comprehensive survey of knowledge graph embedding techniques based on distance and semantic matching models. The authors discuss various embedding methods and focus on distance-based models like CoumpoundE and CoumpoundE3D which originate from affine transformations in geometry.
+
+
+
+
 
 ## Problem statement 
 
