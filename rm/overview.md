@@ -111,6 +111,19 @@ Most recent papers on dynamic graph embedding focus more on building self-attent
 Other models make use of variational recurrent neural networks like [@hajiramezanali_variational_2019] which combines variational autoencoders with recurrent neural networks to learn dynamic graph embeddings. The model captures the temporal evolution of the graph by modeling the latent representations of nodes and edges over time. 
 
 
+# Selection criteria
+
+Reviewed papers are selected based on the following inclusion and exclusion criteria:
+
+- Include papers that specifically address graph embedding techniques.
+- Include applications of graph embeddings in software engineering.
+- Exclude papers that do not provide empirical results or case studies.
+- Exclude papers that focus solely on theoretical aspects without practical applications.
+- Evaluate the relevance of the graph embedding techniques to software engineering tasks.
+- Assess the clarity and rigor of the methodology used in the studies.
+- Consider both static and dynamic graph embeddings.
+- Consider various types of graphs used in software engineering, such as control flow graphs, call graphs, dependency graphs, and knowledge graphs.
+
 
 # Types of graphs in software engineering
 
