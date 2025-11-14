@@ -235,6 +235,8 @@ Table: Summary of graph embedding techniques in software engineering application
 
 Most applications reviewed in this paper are focused on static graph embeddings, with limited use of dynamic graph embeddings. This is likely due to the complexity of dynamic graph embedding techniques and the lack of available datasets for evaluating their performance in software engineering tasks. However, as software systems continue to evolve and change over time, there is a growing need for dynamic graph embeddings that can capture these temporal changes.
 
+Main two applications are concerned around helping developers in design and implementation phase by recommending design patterns and class names. Another important application is bug prediction and vulnerability detection which can help improve software quality and security.
+
 
 
 # Challenges and future directions
