@@ -45,7 +45,7 @@ This paper aims to empirically study and characterize the trade-offs between del
 Rather than proposing a new embedding model, the focus is on partition assignment heuristics and their systemic impact.
 
 
-# Related work 
+## Related work 
 
 Graph vertex embedding is a well-studied area, with various methods proposed to generate low-dimensional representations of nodes in a graph. State of the art method which is widely used is Node2Vec [@grover_node2vec_2016] which uses random walks to capture the local and global structure of the graph. Node2Vec generates embeddings by performing biased random walks on the graph, allowing it to explore both local and global structures. The method has been shown to be effective in capturing community structures and generating meaningful embeddings for various machine learning tasks. As its improvement, DistGER [@fang_distributed_2023] is a distributed graph embedding method that extends Node2Vec by leveraging distributed computing to handle large graphs. DistGER uses a similar random walk approach but optimizes walk sampling in order to maximize the information gain when selecting the next vertex to visit. 
 
@@ -67,9 +67,27 @@ This paper makes the following contributions:
 * We evaluate the impact of different partition assignment strategies on embedding quality, partition balance, and assignment latency, providing insights into the practical implications of these strategies in real-world scenarios.
 * We provide empirical evidence and analysis of the trade-offs involved in partition assignment strategies, contributing to the understanding of how to effectively manage partitioning in distributed dynamic graph embedding systems.
 
+## Paper organization
+
+The rest of the paper is organized as follows: First, system overview is presented, then graph partitioning and embedding model are described. Next, benchmarks are explained in detail. Finally, results and discussion are presented, followed by the conclusion and references.
+
 # Methods 
 
+## System overview 
 
+```mermaid
+flowchart TD
+    A[Graph Events] --> B[Partition Assignment]
+    B --> C[Embedding]
+    C --> D[Aggregation]
+    D --> E[Output Embeddings]
+```
+
+## Graph partitioning
+
+## Embedding model
+
+## Benchmarks
 
 # Results and discussion
 
