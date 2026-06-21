@@ -21,20 +21,21 @@
 	volume = {23},
 	number = {1},
 	journal = {Natural Language Engineering},
+	publisher = {Cambridge University Press},
 	author = {Church, Kenneth Ward},
 	year = {2017},
-	note = {Publisher: Cambridge University Press},
 	pages = {155--162},
 }
 
 @article{zachary_information_1977,
 	title = {An information flow model for conflict and fission in small groups},
 	volume = {33},
+	abstract = {Data from a voluntary association are used to construct a new formal model for a traditional anthropological problem, fission in small groups. The process leading to fission is viewed as an unequal flow of sentiments and information across the ties in a social network. This flow is unequal because it is uniquely constrained by the contextual range and sensitivity of each relationship in the network. The subsequent differential sharing of sentiments leads to the formation of subgroups with more internal stability than the group as a whole, and results in fission. The Ford-Fulkerson labeling algorithm allows an accurate prediction of membership in the subgroups and of the locus of the fission to be made from measurements of the potential for information flow across each edge in the network. Methods for measurement of potential information flow are discussed, and it is shown that all appropriate techniques will generate the same predictions.},
 	number = {4},
 	journal = {Journal of anthropological research},
+	publisher = {University of New Mexico},
 	author = {Zachary, Wayne W},
 	year = {1977},
-	note = {Publisher: University of New Mexico},
 	pages = {452--473},
 }
 
@@ -51,9 +52,9 @@
 	volume = {11},
 	number = {3},
 	journal = {New journal of physics},
+	publisher = {IOP Publishing},
 	author = {Lancichinetti, Andrea and Fortunato, Santo and Kertész, János},
 	year = {2009},
-	note = {Publisher: IOP Publishing},
 	pages = {033015},
 }
 
@@ -62,6 +63,7 @@
 	author = {Rozemberczki, Benedek and Sarkar, Rik},
 	year = {2021},
 	note = {\_eprint: 2101.03091},
+	keywords = {twitch},
 }
 
 @misc{apache_software_foundation_zookeeper_2011,
@@ -85,9 +87,9 @@
 	volume = {393},
 	number = {6684},
 	journal = {nature},
+	publisher = {Nature Publishing Group},
 	author = {Watts, Duncan J and Strogatz, Steven H},
 	year = {1998},
-	note = {Publisher: Nature Publishing Group},
 	pages = {440--442},
 }
 
@@ -113,10 +115,19 @@
 	title = {Analysis of intra-institutional research collaboration: a case of a {Serbian} faculty of sciences},
 	volume = {110},
 	journal = {Scientometrics},
+	publisher = {Springer},
 	author = {Savić, Miloš and Ivanović, Mirjana and Dimić Surla, Bojana},
 	year = {2017},
-	note = {Publisher: Springer},
 	pages = {195--216},
+}
+
+@inproceedings{tang_line_2015,
+	title = {Line: {Large}-scale information network embedding},
+	abstract = {This paper studies the problem of embedding very large information networks into low-dimensional vector spaces, which is useful in many tasks such as visualization, node classification, and link prediction. Most existing graph embedding methods do not scale for real world information networks which usually contain millions of nodes. In this paper, we propose a novel network embedding method called the ``LINE,'' which is suitable for arbitrary types of information networks: undirected, directed, and/or weighted. The method optimizes a carefully designed objective function that preserves both the local and global network structures. An edge-sampling algorithm is proposed that addresses the limitation of the classical stochastic gradient descent and improves both the effectiveness and the efficiency of the inference. Empirical experiments prove the effectiveness of the LINE on a variety of real-world information networks, including language networks, social networks, and citation networks. The algorithm is very efficient, which is able to learn the embedding of a network with millions of vertices and billions of edges in a few hours on a typical single machine. The source code of the LINE is available online{\textbackslash}footnote\{{\textbackslash}url\{https://github.com/tangjianpku/LINE\}\}.},
+	booktitle = {Proceedings of the 24th international conference on world wide web},
+	author = {Tang, Jian and Qu, Meng and Wang, Mingzhe and Zhang, Ming and Yan, Jun and Mei, Qiaozhu},
+	year = {2015},
+	pages = {1067--1077},
 }
 
 @article{huang_leopard_2016,
@@ -141,14 +152,15 @@
 	volume = {7},
 	number = {14},
 	journal = {Proceedings of the VLDB Endowment},
+	publisher = {VLDB Endowment},
 	author = {Xu, Ning and Chen, Lei and Cui, Bin},
 	year = {2014},
-	note = {Publisher: VLDB Endowment},
 	pages = {1917--1928},
 }
 
 @article{fang_distributed_2023,
 	title = {Distributed graph embedding with information-oriented random walks},
+	abstract = {Graph embedding maps graph nodes to low-dimensional vectors, and is widely adopted in machine learning tasks. The increasing availability of billion-edge graphs underscores the importance of learning efficient and effective embeddings on large graphs, such as link prediction on Twitter with over one billion edges. Most existing graph embedding methods fall short of reaching high data scalability. In this paper, we present a general-purpose, distributed, information-centric random walk-based graph embedding framework, DistGER, which can scale to embed billion-edge graphs. DistGER incrementally computes information-centric random walks. It further leverages a multi-proximity-aware, streaming, parallel graph partitioning strategy, simultaneously achieving high local partition quality and excellent workload balancing across machines. DistGER also improves the distributed Skip-Gram learning model to generate node embeddings by optimizing the access locality, CPU throughput, and synchronization efficiency. Experiments on real-world graphs demonstrate that compared to state-of-the-art distributed graph embedding frameworks, including KnightKing, DistDGL, and Pytorch-BigGraph, DistGER exhibits 2.33x-129x acceleration, 45\% reduction in cross-machines communication, and {\textgreater} 10\% effectiveness improvement in downstream tasks.},
 	journal = {arXiv preprint arXiv:2303.15702},
 	author = {Fang, Peng and Khan, Arijit and Luo, Siqiang and Wang, Fang and Feng, Dan and Li, Zhenli and Yin, Wei and Cao, Yuchao},
 	year = {2023},
@@ -157,11 +169,11 @@
 @inproceedings{li_parameter_2013,
 	title = {Parameter server for distributed machine learning},
 	volume = {6},
+	number = {2},
 	booktitle = {Big learning {NIPS} workshop},
 	publisher = {Lake Tahoe, CA},
 	author = {Li, Mu and Zhou, Li and Yang, Zichao and Li, Aaron and Xia, Fei and Andersen, David G and Smola, Alexander},
 	year = {2013},
-	note = {Issue: 2},
 }
 
 @inproceedings{ji_ensemble_2007,
@@ -178,9 +190,9 @@
 	volume = {16},
 	number = {3},
 	journal = {SIAM Journal on Optimization},
+	publisher = {SIAM},
 	author = {Dolan, Elizabeth D and Moré, Jorge J and Munson, Todd S},
 	year = {2006},
-	note = {Publisher: SIAM},
 	pages = {891--909},
 }
 
@@ -189,9 +201,9 @@
 	volume = {20},
 	number = {1},
 	journal = {SIAM Journal on Optimization},
+	publisher = {SIAM},
 	author = {Moré, Jorge J and Wild, Stefan M},
 	year = {2009},
-	note = {Publisher: SIAM},
 	pages = {172--191},
 }
 
@@ -200,6 +212,7 @@
 	booktitle = {Proceedings of the 12th {ACM} {SIGKDD} international conference on {Knowledge} discovery and data mining},
 	author = {Backstrom, Lars and Huttenlocher, Dan and Kleinberg, Jon and Lan, Xiangyang},
 	year = {2006},
+	keywords = {live journal},
 	pages = {44--54},
 }
 
@@ -208,9 +221,9 @@
 	volume = {6},
 	number = {1},
 	journal = {Internet Mathematics},
+	publisher = {Taylor \& Francis},
 	author = {Leskovec, Jure and Lang, Kevin J and Dasgupta, Anirban and Mahoney, Michael W},
 	year = {2009},
-	note = {Publisher: Taylor \& Francis},
 	pages = {29--123},
 }
 
@@ -220,6 +233,7 @@
 	booktitle = {{AAAI}},
 	author = {Rossi, Ryan A. and Ahmed, Nesreen K.},
 	year = {2015},
+	keywords = {uk2002},
 }
 
 @inproceedings{leskovec_signed_2010,
@@ -227,6 +241,7 @@
 	booktitle = {Proceedings of the {SIGCHI} conference on human factors in computing systems},
 	author = {Leskovec, Jure and Huttenlocher, Daniel and Kleinberg, Jon},
 	year = {2010},
+	keywords = {wiki talks},
 	pages = {1361--1370},
 }
 
@@ -235,6 +250,7 @@
 	booktitle = {Proceedings of the 19th international conference on {World} wide web},
 	author = {Leskovec, Jure and Huttenlocher, Daniel and Kleinberg, Jon},
 	year = {2010},
+	keywords = {wiki talks},
 	pages = {641--650},
 }
 
@@ -243,9 +259,9 @@
 	volume = {9},
 	number = {2},
 	journal = {Journal of Complex Networks},
+	publisher = {Oxford University Press},
 	author = {Rozemberczki, Benedek and Allen, Carl and Sarkar, Rik},
 	year = {2021},
-	note = {Publisher: Oxford University Press},
 	pages = {cnab014},
 }
 
@@ -254,9 +270,9 @@
 	volume = {5},
 	number = {2},
 	journal = {Social networks},
+	publisher = {Elsevier},
 	author = {Holland, Paul W and Laskey, Kathryn Blackmond and Leinhardt, Samuel},
 	year = {1983},
-	note = {Publisher: Elsevier},
 	pages = {109--137},
 }
 
@@ -265,9 +281,9 @@
 	volume = {74},
 	number = {1},
 	journal = {Reviews of modern physics},
+	publisher = {APS},
 	author = {Albert, Réka and Barabási, Albert-László},
 	year = {2002},
-	note = {Publisher: APS},
 	pages = {47},
 }
 
@@ -276,14 +292,19 @@
 	volume = {147},
 	number = {5-6},
 	journal = {Physics letters A},
+	publisher = {Elsevier},
 	author = {Bak, Per and Chen, Kan and Tang, Chao},
 	year = {1990},
-	note = {Publisher: Elsevier},
 	pages = {297--300},
 }
 
 @inproceedings{vaquero_adaptive_2013,
 	title = {Adaptive partitioning for large-scale dynamic graphs},
+	abstract = {Mining large-scale graphs is increasingly important, as it provides a powerful way of extracting useful information from real-world data. Efficient processing of that volume of information requires partitioning the graph across multiple nodes in a distributed system. However, traversing edges across distributed partitions results in significant performance penalty due to the additional cost of inter-partition communication. Minimising the number of cut edges between partitions improves communication cost between neighbouring vertices; balanced graph partitioning is required for load balancing [2].
+These large graphs represent real-world information, which is inherently dynamic. Recent systems such as Kineograph [1] can process changing graphs, but they do not consider the impact of dynamism in graph partitioning. To illustrate this impact, we built a call graph from mobile Call Detail Records data, with a sliding window defining the creation and removal of nodes and edges. The graph was partitioned using three different techniques: modulo hash (HSH), the most popular partitioning technique because of its high scalability to produce balanced partitions, [2]; a state of art streaming partition technique (deterministic greedy, DTG) [3]; and our adaptive repartitioning heuristic, (ADP). Figure 1 shows the evolution of the partitioning (expressed as the ratio of edges that cut across different partitions). While a good partitioning strategy significantly improves the initial ratio of cuts, the quality of the partitioning degrades over time, resulting in higher communication penalty.
+In order to prevent this performance degradation, current approaches would require a full graph repartition, which can be extremely costly with large-scale graphs, and generate downtime gaps in the system. While this problem does not deeply affect batch processing systems, it can greatly impact throughput and latency of graph processing systems requiring faster response times. We propose an adaptive approach, where the graph is optimised with every change, over computation execution.
+We improve graph partitioning in a scalable manner by applying a local decision heuristic, based on decentralised, iterative vertex migration. The heuristic [4] migrates vertices between partitions trying to minimise the number of cut edges, while at the same time keeping partitions balanced upon structural changes at run time.
+We tested this approach in a system that processes dynamic graphs and adapts to graph changes by applying the iterative vertex migration algorithm. While continuous migrations bring added overhead to the computation, we observed in several experiments that the total execution time was reduced by over 50\%. A more detailed analysis of the system and experiments is available at [4].},
 	booktitle = {Proceedings of the 4th annual {Symposium} on {Cloud} {Computing}},
 	author = {Vaquero, Luis and Cuadrado, Felix and Logothetis, Dionysios and Martella, Claudio},
 	year = {2013},
@@ -293,11 +314,12 @@
 @article{romero_ruiz_memetic_2018,
 	title = {Memetic algorithm with hungarian matching based crossover and diversity preservation},
 	volume = {22},
+	abstract = {The Graph Partitioning Problem (GPP) is a well-known NP-hard combinatorial problem that involves the finding of a partition of vertexes that minimizes the number of cut edges while fulfilling a set of constraints. This paper presents a newly designed optimizer for the GPP: the Memetic Algorithm with Hungarian Matching Based Crossover and Diversity Preservation (MAHMBCDP). MAHMBCDP is a population-based scheme that incorporates an explicit mechanism to control the diversity with the aim of making a proper use of resources when dealing with long-term executions. Among the novelties of our proposal, the design of a crossover operator that is based on the Hungarian Algorithm to calculate a maximum matching is particularly important. Experimental validation with a set of well-known instances of the graph partitioning archive shows the proper performance of our proposal. In fact, new best-known solutions could be attained in ten test cases.},
 	number = {2},
 	journal = {Computación y Sistemas},
+	publisher = {Instituto Politécnico Nacional, Centro de Investigación en Computación},
 	author = {Romero Ruiz, Emmanuel and Segura, Carlos},
 	year = {2018},
-	note = {Publisher: Instituto Politécnico Nacional, Centro de Investigación en Computación},
 	pages = {347--361},
 }
 
@@ -313,6 +335,7 @@
 @inproceedings{benlic_effective_2010,
 	title = {An effective multilevel memetic algorithm for balanced graph partitioning},
 	volume = {1},
+	abstract = {The balanced graph partitioning consists in dividing the vertices of an undirected graph into a given number of subsets of approximately equal size, such that the number of edges crossing the subsets is minimized. In this work, we present a multilevel memetic algorithm for this NP-hard problem that relies on a powerful grouping recombination operator and a dedicated local search procedure. The proposed operator tends to preserve the backbone with respect to a set of parent individuals, i.e. the grouping of vertices which is same throughout each parent individual. Although our approach requires significantly longer computing time compared to some current state-of-art graph partitioning algorithms such as SCOTCH, METIS, CHACO, JOSTLE, etc., it competes very favorably with these approaches in terms of solution quality. Moreover, it easily reaches or improves on the best partitions ever reported in the literature.},
 	booktitle = {2010 22nd {IEEE} international conference on tools with artificial intelligence},
 	publisher = {IEEE},
 	author = {Benlic, Una and Hao, Jin-Kao},
@@ -334,9 +357,9 @@
 	volume = {55},
 	number = {12},
 	journal = {ACM Computing Surveys},
+	publisher = {ACM New York, NY},
 	author = {Çatalyürek, Ümit and Devine, Karen and Faraj, Marcelo and Gottesbüren, Lars and Heuer, Tobias and Meyerhenke, Henning and Sanders, Peter and Schlag, Sebastian and Schulz, Christian and Seemaier, Daniel and {others}},
 	year = {2023},
-	note = {Publisher: ACM New York, NY},
 	pages = {1--38},
 }
 
@@ -345,9 +368,9 @@
 	volume = {286},
 	number = {5439},
 	journal = {science},
+	publisher = {American Association for the Advancement of Science},
 	author = {Barabási, Albert-László and Albert, Réka},
 	year = {1999},
-	note = {Publisher: American Association for the Advancement of Science},
 	pages = {509--512},
 }
 
@@ -356,9 +379,9 @@
 	volume = {26},
 	number = {2},
 	journal = {Briefings in Bioinformatics},
+	publisher = {Oxford University Press},
 	author = {Li, Sijie and Hua, Heyang and Chen, Shengquan},
 	year = {2025},
-	note = {Publisher: Oxford University Press},
 	pages = {bbaf109},
 }
 
@@ -369,6 +392,7 @@
 	isbn = {978-3-030-36717-6 978-3-030-36718-3},
 	shorttitle = {Embedding and {Predicting} {Software} {Security} {Entity} {Relationships}},
 	url = {http://link.springer.com/10.1007/978-3-030-36718-3_5},
+	doi = {10.1007/978-3-030-36718-3_5},
 	language = {en},
 	urldate = {2025-09-04},
 	booktitle = {Neural {Information} {Processing}},
@@ -376,7 +400,6 @@
 	author = {Xiao, Hongbo and Xing, Zhenchang and Li, Xiaohong and Guo, Hao},
 	editor = {Gedeon, Tom and Wong, Kok Wai and Lee, Minho},
 	year = {2019},
-	doi = {10.1007/978-3-030-36718-3_5},
 	note = {Series Title: Lecture Notes in Computer Science},
 	pages = {50--63},
 }
@@ -417,9 +440,9 @@
 	number = {2},
 	urldate = {2025-09-04},
 	journal = {IEEE transactions on big data},
+	publisher = {IEEE},
 	author = {Wang, Xiao and Bo, Deyu and Shi, Chuan and Fan, Shaohua and Ye, Yanfang and Yu, Philip S.},
 	year = {2022},
-	note = {Publisher: IEEE},
 	pages = {415--436},
 	file = {Available Version (via Google Scholar):/Users/stefan/Zotero/storage/QLH4FHQ4/Wang et al. - 2022 - A survey on heterogeneous graph embedding methods, techniques, applications and sources.pdf:application/pdf},
 }
@@ -655,9 +678,9 @@
 	number = {5},
 	urldate = {2025-09-04},
 	journal = {IEEE Transactions on Services Computing},
+	publisher = {IEEE},
 	author = {Mezni, Haithem},
 	year = {2021},
-	note = {Publisher: IEEE},
 	pages = {3077--3088},
 }
 
@@ -668,9 +691,9 @@
 	number = {9},
 	urldate = {2025-09-04},
 	journal = {IEEE Transactions on Knowledge and Data Engineering},
+	publisher = {IEEE},
 	author = {Yang, Yu and Yin, Hongzhi and Cao, Jiannong and Chen, Tong and Nguyen, Quoc Viet Hung and Zhou, Xiaofang and Chen, Lei},
 	year = {2023},
-	note = {Publisher: IEEE},
 	pages = {9656--9670},
 	file = {Available Version (via Google Scholar):/Users/stefan/Zotero/storage/WGSXJFKW/2023 Yang, Yin, Cao, Chen, Nguyen, Zhou, Chen - Time-aware dynamic graph embedding for asynchronous structural evolution.pdf:application/pdf},
 }
@@ -700,10 +723,10 @@
 @inproceedings{liu_towards_2020,
 	title = {Towards fine-grained temporal network representation via time-reinforced random walk},
 	volume = {34},
+	number = {04},
 	booktitle = {Proceedings of the {AAAI} {Conference} on {Artificial} {Intelligence}},
 	author = {Liu, Zhining and Zhou, Dawei and Zhu, Yada and Gu, Jinjie and He, Jingrui},
 	year = {2020},
-	note = {Issue: 04},
 	pages = {4973--4980},
 }
 
@@ -739,6 +762,7 @@
 
 @inproceedings{mahdavi_dynnode2vec_2018,
 	title = {dynnode2vec: {Scalable} dynamic network embedding},
+	abstract = {Network representation learning in low dimensional vector space has attracted considerable attention in both academic and industrial domains. Most real-world networks are dynamic with addition/deletion of nodes and edges. The existing graph embedding methods are designed for static networks and they cannot capture evolving patterns in a large dynamic network. In this paper, we propose a dynamic embedding method, dynnode2vec, based on the well-known graph embedding method node2vec. Node2vec is a random walk based embedding method for static networks. Applying static network embedding in dynamic settings has two crucial problems: 1) Generating random walks for every time step is time consuming 2) Embedding vector spaces in each timestamp are different. In order to tackle these challenges, dynnode2vec uses evolving random walks and initializes the current graph embedding with previous embedding vectors. We demonstrate the advantages of the proposed dynamic network embedding by conducting empirical evaluations on several large dynamic network datasets.},
 	booktitle = {2018 {IEEE} international conference on big data ({Big} {Data})},
 	publisher = {IEEE},
 	author = {Mahdavi, Sedigheh and Khoshraftar, Shima and An, Aijun},
@@ -797,10 +821,10 @@ Our research on the innovation of knowledge graph in software engineering and th
 	doi = {10.1103/physreve.76.036106},
 	number = {3},
 	journal = {Physical Review E},
+	publisher = {American Physical Society (APS)},
 	author = {Raghavan, Usha Nandini and Albert, Réka and Kumara, Soundar},
 	month = sep,
 	year = {2007},
-	note = {Publisher: American Physical Society (APS)},
 }
 
 @article{gupta_new_1999,
@@ -808,9 +832,9 @@ Our research on the innovation of knowledge graph in software engineering and th
 	volume = {10},
 	number = {6},
 	journal = {Production planning \& control},
+	publisher = {Taylor \& Francis},
 	author = {Gupta, Jatinder ND and Ho, Johnny C},
 	year = {1999},
-	note = {Publisher: Taylor \& Francis},
 	pages = {598--603},
 }
 
@@ -828,4 +852,268 @@ Our research on the innovation of knowledge graph in software engineering and th
 	author = {Vinh, Nguyen Xuan and Epps, Julien and Bailey, James},
 	year = {2009},
 	pages = {1073--1080},
+}
+
+@article{cheng_spectral_2020,
+	title = {Spectral embedding norm: {Looking} deep into the spectrum of the graph {Laplacian}},
+	volume = {13},
+	number = {2},
+	journal = {SIAM journal on imaging sciences},
+	publisher = {SIAM},
+	author = {Cheng, Xiuyuan and Mishne, Gal},
+	year = {2020},
+	pages = {1015--1048},
+}
+
+@article{belkin_laplacian_2003,
+	title = {Laplacian eigenmaps for dimensionality reduction and data representation},
+	volume = {15},
+	number = {6},
+	journal = {Neural computation},
+	publisher = {MIT Press},
+	author = {Belkin, Mikhail and Niyogi, Partha},
+	year = {2003},
+	pages = {1373--1396},
+}
+
+@inproceedings{wang_structural_2016,
+	title = {Structural deep network embedding},
+	abstract = {Network embedding is an important method to learn low-dimensional
+representations of vertexes in networks, aiming to capture and pre-
+serve the network structure. Almost all the existing network em-
+bedding methods adopt shallow models. However, since the under-
+lying network structure is complex, shallow models cannot capture
+the highly non-linear network structure, resulting in sub-optimal
+network representations. Therefore, how to find a method that is
+able to effectively capture the highly non-linear network structure
+and preserve the global and local structure is an open yet impor-
+tant problem. To solve this problem, in this paper we propose a
+Structural Deep Network Embedding method, namely SDNE. More
+specifically, we first propose a semi-supervised deep model, which
+has multiple layers of non-linear functions, thereby being able to
+capture the highly non-linear network structure. Then we propose
+to exploit the first-order and second-order proximity jointly to p-
+reserve the network structure. The second-order proximity is used
+by the unsupervised component to capture the global network struc-
+ture. While the first-order proximity is used as the supervised infor-
+mation in the supervised component to preserve the local network
+structure. By jointly optimizing them in the semi-supervised deep
+model, our method can preserve both the local and global network
+structure and is robust to sparse networks. Empirically, we conduct
+the experiments on five real-world networks, including a language
+network, a citation network and three social networks. The results
+show that compared to the baselines, our method can reconstruc-
+t the original network significantly better and achieves substantial
+gains in three applications, i.e. multi-label classification, link pre-
+diction and visualization.},
+	booktitle = {Proceedings of the 22nd {ACM} {SIGKDD} international conference on {Knowledge} discovery and data mining},
+	author = {Wang, Daixin and Cui, Peng and Zhu, Wenwu},
+	year = {2016},
+	pages = {1225--1234},
+}
+
+@article{shi_heterogeneous_2018,
+	title = {Heterogeneous information network embedding for recommendation},
+	volume = {31},
+	number = {2},
+	journal = {IEEE transactions on knowledge and data engineering},
+	publisher = {IEEE},
+	author = {Shi, Chuan and Hu, Binbin and Zhao, Wayne Xin and Yu, Philip S},
+	year = {2018},
+	pages = {357--370},
+}
+
+@article{bordes_translating_2013,
+	title = {Translating embeddings for modeling multi-relational data},
+	volume = {26},
+	journal = {Advances in neural information processing systems},
+	author = {Bordes, Antoine and Usunier, Nicolas and Garcia-Duran, Alberto and Weston, Jason and Yakhnenko, Oksana},
+	year = {2013},
+}
+
+@inproceedings{bollacker_freebase_2008,
+	title = {Freebase: a collaboratively created graph database for structuring human knowledge},
+	booktitle = {Proceedings of the 2008 {ACM} {SIGMOD} international conference on {Management} of data},
+	author = {Bollacker, Kurt and Evans, Colin and Paritosh, Praveen and Sturge, Tim and Taylor, Jamie},
+	year = {2008},
+	pages = {1247--1250},
+}
+
+@article{xu_understanding_2021-1,
+	title = {Understanding graph embedding methods and their applications},
+	volume = {63},
+	number = {4},
+	journal = {SIAM Review},
+	publisher = {SIAM},
+	author = {Xu, Mengjia},
+	year = {2021},
+	keywords = {slr, rm},
+	pages = {825--853},
+}
+
+@article{wang_survey_2022-1,
+	title = {A survey on heterogeneous graph embedding: methods, techniques, applications and sources},
+	volume = {9},
+	abstract = {Heterogeneous graphs (HGs) also known as heterogeneous information networks have become ubiquitous in real-world
+scenarios; therefore, HG embedding, which aims to learn representations in a lower-dimension space while preserving the
+heterogeneous structures and semantics for downstream tasks (e.g., node/graph classification, node clustering, link prediction), has
+drawn considerable attentions in recent years. In this survey, we perform a comprehensive review of the recent development on HG
+embedding methods and techniques. We first introduce the basic concepts of HG and discuss the unique challenges brought by the
+heterogeneity for HG embedding in comparison with homogeneous graph representation learning; and then we systemically survey
+and categorize the state-of-the-art HG embedding methods based on the information they used in the learning process to address the
+challenges posed by the HG heterogeneity. In particular, for each representative HG embedding method, we provide detailed
+introduction and further analyze its pros and cons; meanwhile, we also explore the transformativeness and applicability of different
+types of HG embedding methods in the real-world industrial environments for the first time. In addition, we further present several
+widely deployed systems that have demonstrated the success of HG embedding techniques in resolving real-world application
+problems with broader impacts. To facilitate future research and applications in this area, we also summarize the open-source code,
+existing graph learning platforms and benchmark datasets. Finally, we explore the additional issues and challenges of HG embedding
+and forecast the future research directions in this field.},
+	number = {2},
+	journal = {IEEE transactions on big data},
+	publisher = {IEEE},
+	author = {Wang, Xiao and Bo, Deyu and Shi, Chuan and Fan, Shaohua and Ye, Yanfang and Yu, Philip S},
+	year = {2022},
+	keywords = {slr, rm},
+	pages = {415--436},
+}
+
+@article{ge_knowledge_2024,
+	title = {Knowledge graph embedding: {An} overview},
+	volume = {13},
+	abstract = {Many mathematical models have been leveraged to design em-
+beddings for representing Knowledge Graph (KG) entities and
+relations for link prediction and many downstream tasks. These
+mathematically-inspired models are not only highly scalable for
+inference in large KGs, but also have many explainable advan-
+tages in modeling different relation patterns that can be validated
+through both formal proofs and empirical results. In this paper,
+we make a comprehensive overview of the current state of research
+in KG completion. In particular, we focus on two main branches
+of KG embedding (KGE) design: 1) distance-based methods and
+2) semantic matching-based methods. We discover the connections
+between recently proposed models and present an underlying trend
+that might help researchers invent novel and more effective mod-
+els. Next, we delve into CompoundE and CompoundE3D, which
+draw inspiration from 2D and 3D affine operations, respectively.
+They encompass a broad spectrum of distance-based embedding
+techniques. We will also discuss an emerging approach for KG
+completion which leverages pre-trained language models (PLMs)
+and textual descriptions of entities and relations and offer insights
+into the integration of KGE embedding methods with PLMs for
+KG completion.},
+	number = {1},
+	journal = {APSIPA Transactions on Signal and Information Processing},
+	publisher = {Now Publishers, Inc.},
+	author = {Ge, Xiou and Wang, Yun Cheng and Wang, Bin and Kuo, C-C Jay and {others}},
+	year = {2024},
+	keywords = {slr, rm},
+}
+
+@article{cai_comprehensive_2018,
+	title = {A comprehensive survey of graph embedding: {Problems}, techniques, and applications},
+	volume = {30},
+	abstract = {Graph is an important data representation which appears in a wide diversity of real-world scenarios. Effective graph
+analytics provides users a deeper understanding of what is behind the data, and thus can benefit a lot of useful applications such as
+node classification, node recommendation, link prediction, etc. However, most graph analytics methods suffer the high computation
+and space cost. Graph embedding is an effective yet efficient way to solve the graph analytics problem. It converts the graph data into
+a low dimensional space in which the graph structural information and graph properties are maximumly preserved. In this survey, we
+conduct a comprehensive review of the literature in graph embedding. We first introduce the formal definition of graph embedding as
+well as the related concepts. After that, we propose two taxonomies of graph embedding which correspond to what challenges exist in
+different graph embedding problem settings and how the existing work address these challenges in their solutions. Finally, we
+summarize the applications that graph embedding enables and suggest four promising future research directions in terms of
+computation efficiency, problem settings, techniques and application scenarios.},
+	number = {9},
+	journal = {IEEE transactions on knowledge and data engineering},
+	publisher = {IEEE},
+	author = {Cai, Hongyun and Zheng, Vincent W and Chang, Kevin Chen-Chuan},
+	year = {2018},
+	keywords = {slr, rm},
+	pages = {1616--1637},
+}
+
+@inproceedings{chen_literature_2020,
+	title = {A literature review of recent graph embedding techniques for biomedical data},
+	abstract = {With the rapid development of biomedical software and hardware, a large amount of relational data interlinking genes, proteins, chemical components, drugs, diseases, and symptoms has been collected for modern biomedical research. Many graph-based learning methods have been proposed to analyze such type of data, giving a deeper insight into the topology and knowledge behind the biomedical data. However, the main difficulty is how to handle high dimensionality and sparsity of the data. Recently, graph embedding methods provide an effective and efficient way to address the above issues. It converts graph-based data into a low dimensional vector space where the graph structural properties and knowledge information are well preserved. In this paper, we conduct a literature review of recent graph embedding techniques for biomedical data. We also introduce important applications and tasks in the biomedical domain as well as associated public biomedical datasets.},
+	booktitle = {International {Conference} on {Neural} {Information} {Processing}},
+	publisher = {Springer},
+	author = {Chen, Yankai and Wu, Yaozu and Ma, Shicheng and King, Irwin},
+	year = {2020},
+	keywords = {slr, rm},
+	pages = {21--29},
+}
+
+@inproceedings{oberhauser_design_2023,
+	title = {Design {Pattern} {Detection} in {Code}: {A} {Hybrid} {Approach} {Utilizing} a {Bayesian} {Network}, {Machine} {Learning} with {Graph} {Embeddings}, and {Micropattern} {Rules}},
+	booktitle = {Proceedings of the {Eighteenth} {International} {Conference} on {Software} {Engineering} {Advances}},
+	author = {Oberhauser, Roy and Moser, Sandro},
+	year = {2023},
+	keywords = {slr, rm},
+	pages = {122--129},
+}
+
+@inproceedings{tomcic_dynamic_2025,
+	title = {Dynamic graph embedding through hub-aware random walks},
+	booktitle = {International {Conference} on {Similarity} {Search} and {Applications}},
+	publisher = {Springer},
+	author = {Tomčić, Aleksandar and Savić, Miloš and Simić, Dušan and Radovanović, Miloš},
+	year = {2025},
+	pages = {315--329},
+}
+
+@inproceedings{knezevic_local_2024,
+	title = {Local {Intrinsic} {Dimensionality} for {Dynamic} {Graph} {Embeddings}},
+	booktitle = {International {Conference} on {Complex} {Networks} and {Their} {Applications}},
+	publisher = {Springer},
+	author = {Knežević, Dušica and Savić, Miloš and Radovanović, Miloš},
+	year = {2024},
+	pages = {374--385},
+}
+
+@inproceedings{khoshraftar_dynamic_2019,
+	title = {Dynamic graph embedding via lstm history tracking},
+	booktitle = {2019 {IEEE} international conference on data science and advanced analytics ({DSAA})},
+	publisher = {IEEE},
+	author = {Khoshraftar, Shima and Mahdavi, Sedigheh and An, Aijun and Hu, Yonggang and Liu, Junfeng},
+	year = {2019},
+	pages = {119--127},
+}
+
+@article{wang_representation_2024,
+	title = {Representation learning of dynamic networks},
+	journal = {arXiv preprint arXiv:2412.11065},
+	author = {Wang, Haixu and Cao, Jiguo and Pei, Jian},
+	year = {2024},
+}
+
+@article{acuteeta_using_nodate,
+	title = {Using temporal node embeddings for community detection},
+	publisher = {Πανεπıotaστ{\textbackslash}acute{\textbackslash}etaμıotao Mακεδoν{\textbackslash}acuteıotaας},
+	author = {Γεμενετζ{\textbackslash}acute{\textbackslash}etaς, {\textbackslash}'Aρης-Iανóς},
+}
+
+@inproceedings{victor_alphacore_2021,
+	title = {Alphacore: {Data} {Depth} based {Core} {Decomposition}},
+	booktitle = {Proceedings of the 27th {ACM} {SIGKDD} {Conference} on {Knowledge} {Discovery} \& {Data} {Mining}},
+	author = {Victor, Friedhelm and Akcora, Cuneyt G and Gel, Yulia R and Kantarcioglu, Murat},
+	year = {2021},
+	pages = {1625--1633},
+}
+
+@inproceedings{kumar_community_2018,
+	title = {Community interaction and conflict on the web},
+	booktitle = {Proceedings of the 2018 {World} {Wide} {Web} {Conference} on {World} {Wide} {Web}},
+	publisher = {International World Wide Web Conferences Steering Committee},
+	author = {Kumar, Srijan and Hamilton, William L and Leskovec, Jure and Jurafsky, Dan},
+	year = {2018},
+	pages = {933--943},
+}
+
+@inproceedings{ugander_balanced_2013,
+	title = {Balanced label propagation for partitioning massive graphs},
+	booktitle = {Proceedings of the sixth {ACM} international conference on {Web} search and data mining},
+	author = {Ugander, Johan and Backstrom, Lars},
+	year = {2013},
+	keywords = {balanced-partitionoing, lpa},
+	pages = {507--516},
+	file = {PDF:/Users/stefan/Zotero/storage/S9LTLGK6/2013 Ugander, Backstrom - Balanced label propagation for partitioning massive graphs.pdf:application/pdf},
 }
