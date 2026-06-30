@@ -155,6 +155,20 @@ In this paper, graph is represented as a sequence of events. Algorithm can be ea
 
 # Results and discussion
 
+## Partitioning hyperparameters
+
+Throughout the experiments, the following hyperparameters are used for partitioning:
+
+| Hyperparameter | Value |
+|----------------|-------|
+| Buffer size    | 1000  |
+| $\mu$          | 1     |
+| $\alpha$       | 1     |
+| $\epsilon$     | 0.1   |
+| Partitions (P) | $\{1, 2, 4, 8\}$ |
+| Replication factor (RF) | $\{1, 3\}$ |
+
+These hyperparameters are chosen to balance the trade-offs between embedding quality, partition balance, and assignment latency. In particular, the buffer size is set to 1000 to allow for sufficient information to be gathered before making partitioning decisions. For lower buffer sizes, the partitioner has less information to make informed decisions, which can lead to suboptimal partitioning and lower embedding quality. The capacity penalty coefficient ($\mu$) is set to 1 to encourage balanced partitions, while the weight of the average partition size ($\alpha$) is also set to 1 to ensure that the capacity penalty is proportional to the average partition size. The imbalance tolerance ($\epsilon$) is set to 0.1 to allow for some flexibility in partition sizes while still encouraging balance. The number of partitions (P) is varied between 1, 2, 4, and 8 to evaluate the impact of partitioning strategy on embedding quality and partition balance. Finally, the replication factor (RF) is varied between 1 and 3 to analyze the effect of replicating vertices across multiple partitions on embedding quality. 
 
 # Conclusion 
 
