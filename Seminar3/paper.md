@@ -81,17 +81,75 @@ The rest of the paper is organized as follows: First, system overview is present
 
 ## System overview 
 
-```mermaid
-flowchart TD
-    A[Graph Events] --> B[Partition Assignment]
-    B --> C[Embedding]
-    C --> D[Aggregation]
-    D --> E[Output Embeddings]
+Temporal graph is represented as a sequence of events. Each event is a tuple (t, u, v) where t is the timestamp of the event and u and v are the vertices involved in the event. The events are processed in chronological order, and the graph is updated accordingly. The system maintains a distributed dynamic Node2Vec-style embedding model, which is updated as new events arrive. The partition assignment strategy determines how new vertices are assigned to partitions in the distributed system.
+
+<!-- explain buffering of events before we partition them and then update the embeddings -->
+
+The system buffers incoming events for a short period before assigning them to partitions. This buffering allows the system to make more informed partitioning decisions by considering a batch of events together, rather than assigning partitions immediately upon the arrival of each event. Once the events are buffered, the partition assignment strategy is applied, and the embeddings are updated accordingly.
+
+In the following listing, pseudocode for the system is presented:
+
+```text 
+
+global state buffer = {} 
+
+when new event (t, u, v) arrives:
+    buffer.add((t, u, v))
+    if buffer.size() >= BUFFER_SIZE:
+        assign_partitions(buffer)
+        update_embeddings(buffer)
+        buffer.clear()
+
 ```
+Buffer also defines new graph snapshot. Let $G_n$ be the graph snapshot after processing the first $n$ buffers. Now, let $B_n$ be the $n$-th buffer of events. The graph snapshot $G_{n+1}$ is obtained by applying the events in buffer $B_n$ to the graph snapshot $G_n$. Specifically, $G_{n+1} = G_n \cup B_n$, where the union operation adds the new vertices and edges from the events in $B_n$ to the existing graph snapshot $G_n$. This process allows the system to maintain an up-to-date representation of the dynamic graph as new events are processed.
 
 ## Graph partitioning
 
+
+Partition of vertex is the partition that contains the most neighbors of the vertex in the buffer. The partitioning strategy assigns the vertex to the partition that contains the most neighbors of the vertex in the buffer. The partitioner also has a replication factor, which allows it to assign a vertex to multiple partitions if there are multiple partitions that contain a similar number of neighbors of the vertex in the buffer. The partitioner has a capacity penalty, which penalizes partitions that have more vertices than the average partition size, to encourage more balanced partitions.
+
+Formally, the score of a partition for a vertex is defined as:
+
+$$ S(P, v) = N(P, v) - \mu \cdot \max(0, |P| - \alpha \cdot (1 + \epsilon) \cdot \frac{1}{|P|} \sum_{P' \in P} |P'|) $$
+
+where $N(P, v)$ is the number of neighbors of vertex $v$ in partition $P$ in the buffer, $\mu$ is the capacity penalty coefficient, $\alpha$ is the weight of the average partition size in the capacity penalty, $\epsilon$ is the imbalance tolerance, and $|P|$ is the size of partition $P$. The partitioner assigns the vertex to the top $k$ partitions with the highest scores, where $k$ is the replication factor. If there are multiple partitions with same scores, the partitioner randomly assigns the vertex to some of those partitions until it reaches the replication factor.
+
+
 ## Embedding model
+
+
+Given dynamic graph (i.e., a graph that changes over time), the DynNode2Vec algorithm [@mahdavi_dynnode2vec_2018] learns continuous feature representations for nodes in the graph at different time steps. The main idea behind DynNode2Vec is to extend the node2vec algorithm [@grover_node2vec_2016] to handle dynamic graphs by incorporating temporal information into the random walk strategy and embedding learning process. The goal is to capture both the structural and temporal dynamics of the graph in the learned embeddings.
+
+In the following listing, pseudocode for the DynNode2Vec algorithm is presented:
+
+
+```
+Input: Dynamic graphs G1, G2, …, GT
+Output: Embeddings Z1, Z2, …, ZT
+
+// t = 1
+Run static node2vec on G1 to train Skip-gram_1 and obtain Z1.
+
+For t = 2 … T:
+     // Identify evolving nodes between G_{t-1} and G_t
+     Compute:
+         V_add  = nodes added from t-1 to t
+         E_add  = edges added from t-1 to t
+         E_del  = edges deleted from t-1 to t
+     ΔV_t = V_add ∪ { v ∈ V_t | ∃ (v, u) ∈ (E_add ∪ E_del) }
+
+     // Evolving random walks only from changed regions
+     Walk_n = node2vec_walks(G_t, start_nodes=ΔV_t, p, q, walk_length, num_walks)
+
+     // Dynamic Skip-gram: initialize from previous time
+     Initialize Skip-gram_t with weights of Skip-gram_{t-1}
+     Update Skip-gram_t vocabulary for any new nodes
+     Train Skip-gram_t on Walk_n
+     Extract Z_t from Skip-gram_t
+End For
+```
+
+In this paper, graph is represented as a sequence of events. Algorithm can be easily adapted to this representation by buffering events and applying them to the graph snapshot at each time step. The algorithm captures the evolving nature of the graph by focusing on the changed regions and updating the embeddings accordingly.
 
 ## Benchmarks
 
