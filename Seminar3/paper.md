@@ -151,6 +151,22 @@ End For
 
 In this paper, graph is represented as a sequence of events. Algorithm can be easily adapted to this representation by buffering events and applying them to the graph snapshot at each time step. The algorithm captures the evolving nature of the graph by focusing on the changed regions and updating the embeddings accordingly.
 
+Since one vertex can be assigned to multiple partitions, each partition produces one embedding for corresponding vertex. Let $z_p = h_p(u)$ be the embedding of vertex $u$ in partition $p$. The final embedding of vertex $u$ is obtained by averaging the embeddings from all partitions that contain the vertex:
+
+$$ z_u = \frac{1}{|P_u|} \sum_{p \in P_u} z_p $$
+
+where $P_u = \{p | u \in V_p\}$ is the set of partitions that contain vertex $u$. This averaging process allows the system to combine information from multiple partitions, potentially improving the quality of the final embedding by leveraging diverse perspectives on the vertex's relationships within the graph.
+
+If replication factor is set to 1, then the final embedding of vertex $u$ is simply the embedding from the single partition that contains the vertex:
+
+$$ z_u = z_p $$
+
+where $p$ is the partition that contains vertex $u$. In this case, the embedding is solely based on the information available in that single partition, which may limit the quality of the embedding if the partition does not capture sufficient context about the vertex's relationships within the graph.
+
+Additionally, if vertex is not partitioned yet, then the final embedding of vertex $u$ is set to zero vector:
+
+$$ z_u = 0 $$
+
 ## Benchmarks
 
 # Results and discussion
