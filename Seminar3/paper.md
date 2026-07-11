@@ -136,10 +136,10 @@ For t = 2 … T:
          V_add  = nodes added from t-1 to t
          E_add  = edges added from t-1 to t
          E_del  = edges deleted from t-1 to t
-     ΔV_t = V_add ∪ { v ∈ V_t | ∃ (v, u) ∈ (E_add ∪ E_del) }
+     delta_V_t = V_add union { v in V_t | exists (v, u) in (E_add union E_del) }
 
      // Evolving random walks only from changed regions
-     Walk_n = node2vec_walks(G_t, start_nodes=ΔV_t, p, q, walk_length, num_walks)
+     Walk_n = node2vec_walks(G_t, start_nodes=delta_V_t, p, q, walk_length, num_walks)
 
      // Dynamic Skip-gram: initialize from previous time
      Initialize Skip-gram_t with weights of Skip-gram_{t-1}
@@ -167,7 +167,38 @@ Additionally, if vertex is not partitioned yet, then the final embedding of vert
 
 $$ z_u = 0 $$
 
-## Benchmarks
+## Benchmarks and evaluation metrics
+
+
+To evaluate the effectiveness of the graph vertex embeddings generated in a distributed environment with community-aware partitioning, several criteria are considered:
+
+**Embedding Quality**: The quality of the embeddings is assessed using metrics such as F1-score of reconstructed graphs [@yip_restore_2023], which measures how well the embeddings capture the relationships between vertices in the original graph. Higher F1-scores indicate better preservation of graph structure in the embeddings. Let $G = (V,E)$ be the original graph and $G' = (V,E')$ be the reconstructed graph from embeddings. $G'$ is constructed by connecting k closest vertices in the embedding space, where k is the number of edges in the original graph. The F1-score is calculated as follows:
+
+$$ F1 = 2 * \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} $$
+
+where
+
+$$ \text{Precision} = \frac{1}{|V|} \sum_{v \in V} \frac{|N(v) \cap N'(v)|}{|N'(v)|} $$
+
+$$ \text{Recall} = \frac{1}{|V|} \sum_{v \in V} \frac{|N(v) \cap N'(v)|}{|N(v)|} $$
+
+and $N(v)$ and $N'(v)$ are the neighbors of vertex $v$ in the original and reconstructed graphs, respectively.
+
+**Partition Quality**: The quality of the partitions is evaluated based on metrics such as edge cut, which measures the number of edges that connect vertices in different partitions. Lower edge cuts indicate better preservation of community structures within partitions. Edge cut is defined as: 
+
+$$ \text{EdgeCut} = \frac{1}{|E|} \sum_{(u,v) \in E} \mathbb{I}(p(u) \neq p(v)) $$
+
+where $E$ is the set of edges in the original graph, $p(u)$ is the partition of vertex $u$, and $\mathbb{I}(\cdot)$ is the indicator function.
+
+**Balance of Partitions**: The balance of the partitions is assessed by measuring the size of each partition and ensuring that they are within a bounded interval. This helps to ensure that the workload is evenly distributed across machines in the distributed environment.
+
+**Partitioning Time**: The time taken to partition the graph is measured to evaluate the efficiency of the partitioning algorithms. Faster partitioning times are preferred, especially for large graphs, as they reduce the overall processing time in a distributed environment.
+
+**Repartitioning amount**: The amount of repartitioning required when new vertices arrive is measured to assess the stability of the partitioning strategy. Lower amounts of repartitioning indicate that the partitioning strategy is more stable and can handle dynamic changes in the graph without significant disruption. Given two graph snapshots $G_n$ and $G_{n+1}$, the amount of repartitioning is defined as:
+
+$$ \text{RepartitioningAmount} = \frac{1}{|V_{n}|} \sum_{v \in V_{n}} \mathbb{I}(p_n(v) \neq p_{n+1}(v)) $$
+
+Where $V_n$ is the set of vertices in graph snapshot $G_n$, $p_n(v)$ is the partition of vertex $v$ in snapshot $G_n$, and $p_{n+1}(v)$ is the partition of vertex $v$ in snapshot $G_{n+1}$. This metric quantifies the proportion of vertices that have been reassigned to different partitions between two consecutive snapshots, providing insight into the stability and adaptability of the partitioning strategy in response to dynamic changes in the graph. It has to be noted that only vertices that are present in both snapshots are considered for this metric, as newly added vertices do not have a previous partition assignment to compare against and thus do not contribute to the measure of repartitioning amount.
 
 # Results and discussion
 
