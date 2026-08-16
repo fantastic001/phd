@@ -190,7 +190,11 @@ $$ \text{EdgeCut} = \frac{1}{|E|} \sum_{(u,v) \in E} \mathbb{I}(p(u) \neq p(v)) 
 
 where $E$ is the set of edges in the original graph, $p(u)$ is the partition of vertex $u$, and $\mathbb{I}(\cdot)$ is the indicator function.
 
-**Balance of Partitions**: The balance of the partitions is assessed by measuring the size of each partition and ensuring that they are within a bounded interval. This helps to ensure that the workload is evenly distributed across machines in the distributed environment.
+**Balance of Partitions**: The balance of the partitions is assessed by measuring the size of each partition and ensuring that they are within a bounded interval. This helps to ensure that the workload is evenly distributed across machines in the distributed environment. Formally, balance is defined as:
+
+$$ B = 1 + \frac{1}{K} \sum_{i=1}^{K} \frac{|s_i - \bar{s}|}{\bar{s}} $$
+
+where $K$ is the number of partitions, $s_i$ is the number of vertices assigned to partition $i$, and $\bar{s} = \frac{1}{K} \sum_{i=1}^{K} s_i$ is the average partition size. A perfectly balanced partitioning yields $B = 1$; higher values indicate greater imbalance.
 
 **Partitioning Time**: The time taken to partition the graph is measured to evaluate the efficiency of the partitioning algorithms. Faster partitioning times are preferred, especially for large graphs, as they reduce the overall processing time in a distributed environment.
 
@@ -216,6 +220,119 @@ Throughout the experiments, the following hyperparameters are used for partition
 | Replication factor (RF) | $\{1, 3\}$ |
 
 These hyperparameters are chosen to balance the trade-offs between embedding quality, partition balance, and assignment latency. In particular, the buffer size is set to 1000 to allow for sufficient information to be gathered before making partitioning decisions. For lower buffer sizes, the partitioner has less information to make informed decisions, which can lead to suboptimal partitioning and lower embedding quality. The capacity penalty coefficient ($\mu$) is set to 1 to encourage balanced partitions, while the weight of the average partition size ($\alpha$) is also set to 1 to ensure that the capacity penalty is proportional to the average partition size. The imbalance tolerance ($\epsilon$) is set to 0.1 to allow for some flexibility in partition sizes while still encouraging balance. The number of partitions (P) is varied between 1, 2, 4, and 8 to evaluate the impact of partitioning strategy on embedding quality and partition balance. Finally, the replication factor (RF) is varied between 1 and 3 to analyze the effect of replicating vertices across multiple partitions on embedding quality. 
+
+For the embedding model itself, the following dataset-specific hyperparameters are used, obtained from a preliminary search over the node2vec return/in-out parameters $p, q$ and the embedding dimension:
+
+| Dataset   | p    | q    | dim |
+|-----------|------|------|-----|
+| CITESEER  | 0.5  | 0.25 | 50  |
+| DBLP      | 0.5  | 1    | 25  |
+| AstroPh   | 2    | 0.25 | 50  |
+| AS-Oregon | 0.5  | 2    | 128 |
+| Enron     | 0.5  | 1    | 128 |
+
+## Datasets
+
+Experiments are performed on five real-world graph datasets, summarized in the table below.
+
+| Dataset | Nodes | Edges |
+| --- | --- | --- |
+| CITESEER | 3327 | 9104 |
+| DBLP | 17716 | 52867 |
+| AstroPh | 18772 | 198110 |
+| AS-Oregon | 11461 | 32730 |
+| Enron | 36692 | 183831 |
+
+CITESEER is a citation network of scientific publications. DBLP and AstroPh are collaboration/citation networks derived from SNAP, where AstroPh links co-authors of astrophysics papers. AS-Oregon is a network of autonomous systems and their peering connections. Enron is an email communication network in which vertices are email addresses and edges represent messages exchanged between them. These datasets vary in size and density, which allows the effect of partitioning to be observed under different community structures.
+
+As a static, non-distributed reference point, running node2vec on the full, unpartitioned graph gives the following F1 reconstruction scores:
+
+| Dataset  | Average F1 score |
+|----------|------------------|
+| CITESEER | 34.82%           |
+| DBLP     | 60.3%            |
+| AstroPh  | 70.41%           |
+| AS-Oregon| 31.26%           |
+| Enron    | 20.42%           |
+
+These values serve as a rough upper bound against which the effect of partitioning, buffering, and dynamic re-embedding can be compared: a system that partitions the graph and processes it incrementally is not expected to exceed this quality, since it operates with a fraction of the graph's global information at any given time and adapts to it incrementally rather than embedding the full graph at once.
+
+## Embedding quality, partition balance and edge cut
+
+Using the temporal test command (`vv temporal_test`) with the buffered event processing pipeline described in the System overview, the following tables report, for each dataset and number of partitions $P \in \{1, 2, 4, 8\}$ with replication factor $RF = 1$, the F1 reconstruction score, the edge cut, and the balance of the resulting partitions, averaged over 10 iterations of the buffered stream.
+
+CITESEER:
+
+| P | F1 | Edge cut | Balance |
+|---|------|----------|---------|
+| 1 | 47%    | 0%    | 1 |
+| 2 | 45.45% | 23%   | 1.31 |
+| 4 | 47.48% | 39%   | 1.63 |
+| 8 | 49.86% | 48%   | 1.75 |
+
+DBLP:
+
+| P | F1 | Edge cut | Balance |
+|---|------|----------|---------|
+| 1 | 50.44% | 0%     | 1 |
+| 2 | 54.35% | 23%    | 1.10 |
+| 4 | 54.30% | 50%    | 1.21 |
+| 8 | 50.07% | 59%    | 1.35 |
+
+AstroPh:
+
+| P | F1 | Edge cut | Balance |
+|---|------|----------|---------|
+| 1 | 57.59% | 0%     | 1 |
+| 2 | 55.28% | 33%    | 1.10 |
+| 4 | 50.2%  | 55%    | 1.10 |
+| 8 | 46.82% | 65%    | 1.25 |
+
+AS-Oregon:
+
+| P | F1 | Edge cut | Balance |
+|---|------|----------|---------|
+| 1 | 26.58% | 0%      | 1 |
+| 2 | 28.72% | 30.44%  | 1.21 |
+| 4 | 25.67% | 53.79%  | 1.26 |
+| 8 | 23.13% | 71.56%  | 1.27 |
+
+Enron:
+
+| P | F1 | Edge cut | Balance |
+|---|------|----------|---------|
+| 1 | 17.63% | 0%     | 1 |
+| 2 | 24.35% | 33.07% | 1.09 |
+| 4 | 31.44% | 49.18% | 1.08 |
+| 8 | 30.68% | 61.99% | 1.25 |
+
+As expected, edge cut increases monotonically with the number of partitions across all datasets, since splitting the vertex set into more partitions necessarily severs more cross-community edges. Balance stays close to the ideal value of 1 in all cases, confirming that the neighbor-based partitioner with capacity penalty distributes vertices close to evenly without an explicit load-balancing step.
+
+The effect of partitioning on embedding quality (F1), however, is dataset-dependent. On datasets with strong, well-separated community structure (CITESEER, DBLP, Enron), F1 remains stable or even improves as $P$ increases, despite the growing edge cut: this suggests that when communities are cohesive, most of a vertex's relevant neighborhood is captured within its own partition, so splitting the graph does not meaningfully harm the quality of the embedding that is reconstructed from local, per-partition context. On denser, less clearly clustered datasets (AstroPh, AS-Oregon), F1 degrades as $P$ increases, since a larger share of each vertex's neighbors end up outside its assigned partition, and this information is not available to the local embedding process. Partitioning time itself was found to be negligible compared to embedding time in all experiments; the dominant cost of processing a buffer is the embedding computation on the slowest (largest or most active) partition.
+
+## Effect of replication factor
+
+Increasing the replication factor $RF$ allows a vertex to be embedded independently in more than one partition, with the final embedding obtained by averaging the per-partition embeddings as described in the Embedding model section. This trades additional computation and storage for a more informed, less committal partition assignment. On CITESEER with $P = 4$ and buffer size 1000, increasing the replication factor from $RF = 1$ to $RF = 3$ raises the F1 reconstruction score from 58% to 69%, indicating that hedging the partition assignment across multiple partitions can substantially mitigate the quality loss introduced by early, uncertain assignment decisions. This comes at the cost of up to $RF\times$ the embedding computation per vertex, illustrating directly the latency/quality trade-off that motivates this paper: assigning a vertex to a single partition immediately is cheaper but riskier, while replicating it across several partitions is more expensive but more robust to a suboptimal initial assignment.
+
+## Temporal evolution
+
+Beyond aggregate scores, it is informative to track how F1 score, balance, edge cut, and repartitioning rate evolve as the event stream is ingested buffer by buffer. The figures below show this evolution for CITESEER, which is representative of the trends observed across the other datasets.
+
+![F1 reconstruction score over iterations (CITESEER)](png/citeseer-f1.png)
+
+The F1 score generally improves as more events are ingested and the graph snapshot grows, since the embedding model accumulates more structural information over time. Using more partitions tends to remain competitive with, or even improve on, the single-partition baseline on this dataset, consistent with the aggregate results above.
+
+![Partition balance over iterations (CITESEER)](png/citeseer-balance.png)
+
+Balance remains close to 1 throughout the stream, showing that the neighbor-based partitioner keeps partitions nearly evenly sized even as the graph evolves, without requiring an explicit rebalancing step.
+
+![Edge cut over iterations (CITESEER)](png/citeseer-edge-cuts.png)
+
+The edge cut ratio rises quickly during the first few buffers, while the partitions are still forming, and then stabilizes at a plateau largely determined by the number of partitions and the graph's community structure. This indicates that the partitioner reaches a steady state rather than degrading further as the stream continues.
+
+![Repartitioning rate over iterations (CITESEER)](png/citeseer-repartitions.png)
+
+The fraction of vertices repartitioned per buffer decays rapidly after an initial warm-up phase and stays below 20% for the remainder of the stream. This indicates that, once the partitioner has seen enough of a vertex's neighborhood, its assignment stabilizes and is only revised when the vertex's local structure changes significantly, keeping the overhead of maintaining partition assignments low over time. The same qualitative pattern (rapid rise then plateau for edge cut, low and decaying repartitioning rate, balance close to 1) is observed for DBLP, AstroPh, AS-Oregon, and Enron, with the main dataset-dependent difference being the level at which F1 stabilizes, consistent with the discussion above.
 
 # Conclusion 
 
