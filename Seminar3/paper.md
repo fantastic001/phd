@@ -316,23 +316,51 @@ Increasing the replication factor $RF$ allows a vertex to be embedded independen
 
 ## Temporal evolution
 
-Beyond aggregate scores, it is informative to track how F1 score, balance, edge cut, and repartitioning rate evolve as the event stream is ingested buffer by buffer. The figures below show this evolution for CITESEER, which is representative of the trends observed across the other datasets.
+Beyond aggregate scores, it is informative to track how F1 score, balance, edge cut, and repartitioning rate evolve as the event stream is ingested buffer by buffer, broken down by number of partitions, for each of the five datasets.
 
-![F1 reconstruction score over iterations (CITESEER)](png/citeseer-f1.png)
+### F1 score over iterations
 
-The F1 score generally improves as more events are ingested and the graph snapshot grows, since the embedding model accumulates more structural information over time. Using more partitions tends to remain competitive with, or even improve on, the single-partition baseline on this dataset, consistent with the aggregate results above.
+| | |
+|---|---|
+| ![CITESEER](png/citeseer-f1.png){width=45%} | ![DBLP](png/dblp-f1.png){width=45%} |
+| ![AstroPh](png/astroph-f1.png){width=45%} | ![AS-Oregon](png/as-oregon-f1.png){width=45%} |
 
-![Partition balance over iterations (CITESEER)](png/citeseer-balance.png)
+![Enron](png/enron-f1.png){width=45%}
 
-Balance remains close to 1 throughout the stream, showing that the neighbor-based partitioner keeps partitions nearly evenly sized even as the graph evolves, without requiring an explicit rebalancing step.
+The F1 score generally improves as more events are ingested and the graph snapshot grows, since the embedding model accumulates more structural information over time. Using more partitions tends to remain competitive with, or even improve on, the single-partition baseline on datasets with clear community structure (CITESEER, DBLP, Enron), while the denser AstroPh dataset shows a modest drop at higher partition counts, consistent with the increased edge cut discussed above.
 
-![Edge cut over iterations (CITESEER)](png/citeseer-edge-cuts.png)
+### Balance over iterations
 
-The edge cut ratio rises quickly during the first few buffers, while the partitions are still forming, and then stabilizes at a plateau largely determined by the number of partitions and the graph's community structure. This indicates that the partitioner reaches a steady state rather than degrading further as the stream continues.
+| | |
+|---|---|
+| ![CITESEER](png/citeseer-balance.png){width=45%} | ![DBLP](png/dblp-balance.png){width=45%} |
+| ![AstroPh](png/astroph-balance.png){width=45%} | ![AS-Oregon](png/as-oregon-balance.png){width=45%} |
 
-![Repartitioning rate over iterations (CITESEER)](png/citeseer-repartitions.png)
+![Enron](png/enron-balance.png){width=45%}
 
-The fraction of vertices repartitioned per buffer decays rapidly after an initial warm-up phase and stays below 20% for the remainder of the stream. This indicates that, once the partitioner has seen enough of a vertex's neighborhood, its assignment stabilizes and is only revised when the vertex's local structure changes significantly, keeping the overhead of maintaining partition assignments low over time. The same qualitative pattern (rapid rise then plateau for edge cut, low and decaying repartitioning rate, balance close to 1) is observed for DBLP, AstroPh, AS-Oregon, and Enron, with the main dataset-dependent difference being the level at which F1 stabilizes, consistent with the discussion above.
+Balance remains close to 1 across all datasets and partition counts throughout the stream, showing that the neighbor-based partitioner keeps partitions nearly evenly sized without requiring an explicit rebalancing step, even as the graph evolves.
+
+### Edge cut over iterations
+
+| | |
+|---|---|
+| ![CITESEER](png/citeseer-edge-cuts.png){width=45%} | ![DBLP](png/dblp-edge-cuts.png){width=45%} |
+| ![AstroPh](png/astroph-edge-cuts.png){width=45%} | ![AS-Oregon](png/as-oregon-edge-cuts.png){width=45%} |
+
+![Enron](png/enron-edge-cuts.png){width=45%}
+
+The edge cut ratio rises quickly during the first few buffers, while the partitions are still forming, and then stabilizes at a plateau largely determined by the number of partitions and the graph's community structure. This holds across all five datasets, indicating that the partitioner reaches a steady state rather than degrading further as the stream continues.
+
+### Repartitioning rate over iterations
+
+| | |
+|---|---|
+| ![CITESEER](png/citeseer-repartitions.png){width=45%} | ![DBLP](png/dblp-repartitions.png){width=45%} |
+| ![AstroPh](png/astroph-repartitions.png){width=45%} | ![AS-Oregon](png/as-oregon-repartitions.png){width=45%} |
+
+![Enron](png/enron-repartitions.png){width=45%}
+
+The fraction of vertices repartitioned per buffer decays rapidly after an initial warm-up phase and stays below 20% across all datasets and partition configurations. This indicates that, once the partitioner has seen enough of a vertex's neighborhood, its assignment stabilizes and is only revised when the vertex's local structure changes significantly, keeping the overhead of maintaining partition assignments low throughout the stream.
 
 # Conclusion 
 
