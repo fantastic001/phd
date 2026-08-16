@@ -264,11 +264,12 @@ Using the temporal test command (`vv temporal_test`) with the buffered event pro
 
 
 | P | F1 | Edge cut | Balance |
-|---|------|----------|---------|
-| 1 | 47%    | 0%    | 1 |
-| 2 | 45.45% | 23%   | 1.31 |
-| 4 | 47.48% | 39%   | 1.63 |
-| 8 | 49.86% | 48%   | 1.75 |
+|-----------------|--------------------------|----------|----------|
+| 1               | 47.57% ± 1.56%           | 0%       | 1 | 
+| 2               | 45.81% ± 0.59%           | 23%      | 1.31 |
+| 4               | 48.06% ± 0.53%           | 39%      | 1.63 |
+| 8               | 54.81% ± 1.66%           | 48%      | 1.75 |
+
 Table: F1 reconstruction score, edge cut, and balance for CITESEER with buffered dynnode2vec, RF = 1.
 
 
