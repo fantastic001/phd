@@ -218,6 +218,7 @@ Throughout the experiments, the following hyperparameters are used for partition
 | $\epsilon$     | 0.1   |
 | Partitions (P) | $\{1, 2, 4, 8\}$ |
 | Replication factor (RF) | $\{1, 3\}$ |
+Table: Partitioning hyperparameters used throughout the experiments.
 
 These hyperparameters are chosen to balance the trade-offs between embedding quality, partition balance, and assignment latency. In particular, the buffer size is set to 1000 to allow for sufficient information to be gathered before making partitioning decisions. For lower buffer sizes, the partitioner has less information to make informed decisions, which can lead to suboptimal partitioning and lower embedding quality. The capacity penalty coefficient ($\mu$) is set to 1 to encourage balanced partitions, while the weight of the average partition size ($\alpha$) is also set to 1 to ensure that the capacity penalty is proportional to the average partition size. The imbalance tolerance ($\epsilon$) is set to 0.1 to allow for some flexibility in partition sizes while still encouraging balance. The number of partitions (P) is varied between 1, 2, 4, and 8 to evaluate the impact of partitioning strategy on embedding quality and partition balance. Finally, the replication factor (RF) is varied between 1 and 3 to analyze the effect of replicating vertices across multiple partitions on embedding quality. 
 
@@ -230,6 +231,7 @@ For the embedding model itself, the following dataset-specific hyperparameters a
 | AstroPh   | 2    | 0.25 | 50  |
 | AS-Oregon | 0.5  | 2    | 128 |
 | Enron     | 0.5  | 1    | 128 |
+Table: Embedding hyperparameters (node2vec $p$, $q$, and embedding dimension) used for each dataset.
 
 ## Datasets
 
@@ -242,6 +244,7 @@ Experiments are performed on five real-world graph datasets, summarized in the t
 | AstroPh | 18772 | 198110 |
 | AS-Oregon | 11461 | 32730 |
 | Enron | 36692 | 183831 |
+Table: Datasets used in the experiments.
 
 CITESEER is a citation network of scientific publications. DBLP and AstroPh are collaboration/citation networks derived from SNAP, where AstroPh links co-authors of astrophysics papers. AS-Oregon is a network of autonomous systems and their peering connections. Enron is an email communication network in which vertices are email addresses and edges represent messages exchanged between them. These datasets vary in size and density, which allows the effect of partitioning to be observed under different community structures.
 
@@ -254,6 +257,7 @@ As a static, non-distributed reference point, running node2vec on the full, unpa
 | AstroPh  | 70.41%           |
 | AS-Oregon| 31.26%           |
 | Enron    | 20.42%           |
+Table: Average F1 reconstruction score of static node2vec on the full, unpartitioned graph for each dataset.
 
 These values serve as a rough upper bound against which the effect of partitioning, buffering, and dynamic re-embedding can be compared: a system that partitions the graph and processes it incrementally is not expected to exceed this quality, since it operates with a fraction of the graph's global information at any given time and adapts to it incrementally rather than embedding the full graph at once.
 
@@ -261,7 +265,6 @@ These values serve as a rough upper bound against which the effect of partitioni
 
 Using the temporal test command (`vv temporal_test`) with the buffered event processing pipeline described in the System overview, the following tables report, for each dataset and number of partitions $P \in \{1, 2, 4, 8\}$ with replication factor $RF = 1$, the F1 reconstruction score, the edge cut, and the balance of the resulting partitions, averaged over 10 iterations of the buffered stream.
 
-CITESEER:
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
@@ -269,8 +272,8 @@ CITESEER:
 | 2 | 45.45% | 23%   | 1.31 |
 | 4 | 47.48% | 39%   | 1.63 |
 | 8 | 49.86% | 48%   | 1.75 |
+Table: F1 reconstruction score, edge cut, and balance for CITESEER with buffered dynnode2vec, RF = 1.
 
-DBLP:
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
@@ -278,8 +281,8 @@ DBLP:
 | 2 | 54.35% | 23%    | 1.10 |
 | 4 | 54.30% | 50%    | 1.21 |
 | 8 | 50.07% | 59%    | 1.35 |
+Table: F1 reconstruction score, edge cut, and balance for DBLP with buffered dynnode2vec, RF = 1.
 
-AstroPh:
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
@@ -287,8 +290,8 @@ AstroPh:
 | 2 | 55.28% | 33%    | 1.10 |
 | 4 | 50.2%  | 55%    | 1.10 |
 | 8 | 46.82% | 65%    | 1.25 |
+Table: F1 reconstruction score, edge cut, and balance for AstroPh with buffered dynnode2vec, RF = 1.
 
-AS-Oregon:
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
@@ -296,8 +299,8 @@ AS-Oregon:
 | 2 | 28.72% | 30.44%  | 1.21 |
 | 4 | 25.67% | 53.79%  | 1.26 |
 | 8 | 23.13% | 71.56%  | 1.27 |
+Table: F1 reconstruction score, edge cut, and balance for AS-Oregon with buffered dynnode2vec, RF = 1.
 
-Enron:
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
@@ -305,6 +308,7 @@ Enron:
 | 2 | 24.35% | 33.07% | 1.09 |
 | 4 | 31.44% | 49.18% | 1.08 |
 | 8 | 30.68% | 61.99% | 1.25 |
+Table: F1 reconstruction score, edge cut, and balance for Enron with buffered dynnode2vec, RF = 1.
 
 As expected, edge cut increases monotonically with the number of partitions across all datasets, since splitting the vertex set into more partitions necessarily severs more cross-community edges. Balance stays close to the ideal value of 1 in all cases, confirming that the neighbor-based partitioner with capacity penalty distributes vertices close to evenly without an explicit load-balancing step.
 
