@@ -275,19 +275,20 @@ Table: F1 reconstruction score, edge cut, and balance for CITESEER with buffered
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
-| 1 | 50.44% | 0%     | 1 |
-| 2 | 54.35% | 23%    | 1.10 |
-| 4 | 54.30% | 50%    | 1.21 |
-| 8 | 50.07% | 59%    | 1.35 |
+| 1               | 50.91% ± 0.31%           | 0%       | 1 | 
+| 2               | 54.11% ± 0.18%           | 32%      | 1.10 |
+| 4               | 54.51% ± 0.15%           | 50%      | 1.20 |
+| 8               | 49.87% ± 0.16%           | 59%      | 1.31 |
+
 Table: F1 reconstruction score, edge cut, and balance for DBLP with buffered dynnode2vec, RF = 1.
 
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
-| 1 | 57.59% | 0%     | 1 |
-| 2 | 55.28% | 33%    | 1.10 |
-| 4 | 50.2%  | 55%    | 1.10 |
-| 8 | 46.82% | 65%    | 1.25 |
+| 1               | 57.70% ± 0.11%           | 0%       | 1 |
+| 2               | 54.67% ± 0.36%           | 35%      | 1.08 |
+| 4               | 50.95% ± 0.45%           | 56%      | 1.11 |
+| 8               | 45.94% ± 0.51%           | 65%      | 1.26 |
 Table: F1 reconstruction score, edge cut, and balance for AstroPh with buffered dynnode2vec, RF = 1.
 
 
