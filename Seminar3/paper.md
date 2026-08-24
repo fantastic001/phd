@@ -259,7 +259,7 @@ Table: Average F1 reconstruction score of static node2vec on the full, unpartiti
 These values serve as a rough upper bound against which the effect of partitioning, buffering, and dynamic re-embedding can be compared: a system that partitions the graph and processes it incrementally is generally not expected to exceed this quality, since it operates with a fraction of the graph's global information at any given time and adapts to it incrementally rather than embedding the full graph at once. CITESEER is a notable exception to this expectation, discussed in the next section: the buffered dynnode2vec pipeline exceeds the static baseline there even without partitioning, plausibly because repeated incremental re-embedding across buffers gives the model more effective training signal than a single static pass over the graph.
 
 
-## Sensitivity analysis of the balance penalty parameter (μ)
+## Sensitivity analysis of the balance penalty parameter 
 
 The most common neighbor partitioner uses a capacity penalty coefficient $\mu$ to discourage assigning vertices to partitions that are already larger than average. This section analyzes the effect of $\mu$ on partition balance, varying $\mu \in \{0, 0.5, 1, 1.5, 2\}$ across all five datasets with 2 and 4 partitions. $\mu = 0$ disables the penalty entirely, so balance is determined purely by neighbor counts; higher $\mu$ increasingly rebalances vertex placement at the expense of prioritizing neighbor locality.
 
@@ -267,116 +267,116 @@ The most common neighbor partitioner uses a capacity penalty coefficient $\mu$ t
 
 The tables below show the average balance at the final iteration for each combination of $\mu$ and partition count. $B = 1$ is a perfectly balanced partitioning; higher values indicate greater imbalance.
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.18 | 1.49 |
 | 1.0 | 1.18 | 1.20 |
 | 1.5 | 1.10 | 1.21 |
 | 2.0 | 1.05 | 1.19 |
-Table: Average balance at the final iteration for AS-Oregon dataset across different μ values and partition counts.
+Table: Average balance at the final iteration for AS-Oregon dataset across different $\mu$ values and partition counts.
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.15 | 1.18 |
 | 1.0 | 1.13 | 1.12 |
 | 1.5 | 1.08 | 1.12 |
 | 2.0 | 1.05 | 1.22 |
-Table: Average balance at the final iteration for AstroPh dataset across different μ values and partition counts.
+Table: Average balance at the final iteration for AstroPh dataset across different $\mu$ values and partition counts.
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.61 | 1.61 |
 | 1.0 | 1.31 | 1.63 |
 | 1.5 | 1.17 | 1.50 |
 | 2.0 | 1.17 | 1.17 |
-Table: Average balance at the final iteration for CITESEER dataset across different μ values and partition counts.
+Table: Average balance at the final iteration for CITESEER dataset across different $\mu$ values and partition counts.
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.08 | 1.16 |
 | 1.0 | 1.03 | 1.09 |
 | 1.5 | 1.14 | 1.20 |
 | 2.0 | 1.01 | 1.14 |
-Table: Average balance at the final iteration for DBLP dataset across different μ values and partition counts.
+Table: Average balance at the final iteration for DBLP dataset across different $\mu$ values and partition counts.
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.10 | 1.14 |
 | 1.0 | 1.10 | 1.10 |
 | 1.5 | 1.02 | 1.02 |
 | 2.0 | 1.06 | 1.06 |
-Table: Average balance at the final iteration for Enron dataset across different μ values and partition counts.
+Table: Average balance at the final iteration for Enron dataset across different $\mu$ values and partition counts.
 
 The tables below show the average balance across all iterations (not just the last one) for each combination of $\mu$ and partition count, capturing how balance behaves during the stream rather than only at the end.
 
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.14 | 1.51 |
 | 1.0 | 1.12 | 1.23 |
 | 1.5 | 1.10 | 1.18 |
 | 2.0 | 1.10 | 1.15 |
-Table: Average balance across all iterations for AS-Oregon dataset across different μ values and partition counts.
+Table: Average balance across all iterations for AS-Oregon dataset across different $\mu$ values and partition counts.
 
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.24 | 1.51 |
 | 1.0 | 1.14 | 1.27 |
 | 1.5 | 1.11 | 1.21 |
 | 2.0 | 1.10 | 1.20 |
-Table: Average balance across all iterations for AstroPh dataset across different μ values and partition counts.
+Table: Average balance across all iterations for AstroPh dataset across different $\mu$ values and partition counts.
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.92 | 2.12 |
 | 1.0 | 1.52 | 1.84 |
 | 1.5 | 1.34 | 1.66 |
 | 2.0 | 1.34 | 1.55 |
-Table: Average balance across all iterations for CITESEER dataset across different μ values and partition counts.
+Table: Average balance across all iterations for CITESEER dataset across different $\mu$ values and partition counts.
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.30 | 1.60 |
 | 1.0 | 1.17 | 1.40 |
 | 1.5 | 1.15 | 1.33 |
 | 2.0 | 1.12 | 1.25 |
-Table: Average balance across all iterations for DBLP dataset across different μ values and partition counts.
+Table: Average balance across all iterations for DBLP dataset across different $\mu$ values and partition counts.
 
 
 
-| μ | P=2 | P=4 |
+| Penalty | P=2 | P=4 |
 |---|-----|-----|
 | 0.0 | 2.00 | 2.50 |
 | 0.5 | 1.14 | 1.27 |
 | 1.0 | 1.11 | 1.19 |
 | 1.5 | 1.09 | 1.17 |
 | 2.0 | 1.08 | 1.15 |
-Table: Average balance across all iterations for Enron dataset across different μ values and partition counts.
+Table: Average balance across all iterations for Enron dataset across different $\mu$ values and partition counts.
 
 
 The following plots show the (smoothed) average balance over iterations for each $\mu$ value, for P=2 and P=4 partitions side by side.
 
 
-![CITESEER Balance vs mu](plots/citeseer-balance-mu.png) 
+![CITESEER Balance vs mu](png/citeseer-balance-mu.png) 
 
-![DBLP Balance vs mu](plots/dblp-balance-mu.png) |
+![DBLP Balance vs mu](png/dblp-balance-mu.png) |
 
 
-![AstroPh Balance vs mu](plots/astroph-balance-mu.png) 
+![AstroPh Balance vs mu](png/astroph-balance-mu.png) 
 
-![AS-Oregon Balance vs mu](plots/as-oregon-balance-mu.png) |
+![AS-Oregon Balance vs mu](png/as-oregon-balance-mu.png) |
 
-![Enron Balance vs mu](plots/enron-balance-mu.png) |
+![Enron Balance vs mu](png/enron-balance-mu.png) |
 
 Across all datasets, $\mu = 0$ (no capacity penalty) produces the worst balance, matching the partition count almost exactly ($B \approx 1.5 + P/4$ at $P$ partitions), since vertices are placed purely by neighbor affinity with no regard for partition size. Increasing $\mu$ from 0 to 1 yields the largest balance improvement; beyond $\mu = 1$–$1.5$, returns diminish and balance mostly plateaus, with CITESEER remaining the hardest dataset to balance at every $\mu$ value tested.
 
