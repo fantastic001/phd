@@ -1,5 +1,5 @@
 ---
-title: "Trade-offs in Partition Assignment for Distributed Dynamic Graph Embedding"
+title: "Trade-offs in Partition Assignment Policies intended for Distributed Deployment of Dynamic Graph Embedding Systems"
 author: "Stefan Nožinić"
 abstract: |
   This paper studies the trade-off between early and informed partition assignment for online node arrivals in distributed dynamic graph embedding. We describe a buffered event-processing pipeline in which incoming graph events are batched before a neighbor-based partitioner, with a tunable replication factor and capacity penalty, assigns vertices to partitions; embeddings are then maintained using a buffered variant of dynnode2vec. Using five real-world dynamic graph datasets (CITESEER, DBLP, AstroPh, AS-Oregon, Enron), we empirically evaluate how the number of partitions and the replication factor affect embedding quality, partition balance, edge cut, and repartitioning stability over time. Results show that the quality loss caused by partitioning is strongly dataset-dependent: graphs with well-separated community structure tolerate more partitions with little to no loss in embedding quality, while denser, less clearly clustered graphs degrade as the partition count grows. We further show that increasing the replication factor can substantially recover the embedding quality lost to early, uncertain partition assignment, at the cost of additional computation, directly illustrating the latency/quality trade-off central to this work.
@@ -234,13 +234,13 @@ Table: Embedding hyperparameters (node2vec $p$, $q$, and embedding dimension) us
 
 Experiments are performed on five real-world graph datasets, summarized in the table below.
 
-| Dataset | Nodes | Edges |
-| --- | --- | --- |
-| CITESEER | 3327 | 9104 |
-| DBLP | 17716 | 52867 |
-| AstroPh | 18772 | 198110 |
-| AS-Oregon | 11461 | 32730 |
-| Enron | 36692 | 183831 |
+| Dataset | Nodes | Edges | Average degree | Average clustering coefficient | Density |
+| --- | --- | --- |--- | --- | --- |
+| CITESEER | 3264 | 4536 | 2.78 | 0.145 | 0.0009 |
+| DBLP | 17716 | 52867 | 5.97 | 0.134 | 0.00034 |
+| AstroPh | 18772 | 198110 | 21.11 | 0.631 | 0.00112 |
+| AS-Oregon | 11806 | 38781 | 6.57 | 0.399 | 0.00056 |
+| Enron | 36692 | 183831 | 10.02 | 0.497 | 0.00027 |
 Table: Datasets used in the experiments.
 
 CITESEER is a citation network of scientific publications. DBLP and AstroPh are collaboration/citation networks derived from SNAP, where AstroPh links co-authors of astrophysics papers. AS-Oregon is a network of autonomous systems and their peering connections. Enron is an email communication network in which vertices are email addresses and edges represent messages exchanged between them. These datasets vary in size and density, which allows the effect of partitioning to be observed under different community structures.
