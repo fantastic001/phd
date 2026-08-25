@@ -10,43 +10,41 @@ bibliography: ./refs.bib
 
 A graph is a mathematical structure consisting of vertices (or nodes) connected by edges. Graphs are widely used to model relationships and interactions in various domains [@van_der_hofstad_random_2024], such as social networks [@leskovec_signed_2010] [@backstrom_group_2006] [@rozemberczki_twitch_2021], collaboration networks [@savic_analysis_2017], terrorist networks [@krebs_mapping_2002] and blog citation networks [@adamic_political_2005]. In these applications, the relationships between entities can be represented as edges connecting the corresponding vertices.
 
-In many real-world graphs, the degree distribution follows a power-law, meaning that a small number of vertices have a very high degree (i.e., they are connected to many other vertices), while most vertices have a low degree. This characteristic is often observed in social networks, where a few individuals (e.g., celebrities) have many connections, while the majority of users have relatively few connections.
-
-In real graphs, there are several properties that are often observed [@watts_collective_1998] [@zachary_information_1977] [@albert_statistical_2002]:
+In many real-world graphs, which model real-world phenomena, there are several properties that are often observed [@watts_collective_1998] [@zachary_information_1977] [@albert_statistical_2002]:
 - **Small-world property**: Most pairs of vertices can be connected by a short path, even in large graphs. This is often referred to as the "six degrees of separation" phenomenon. [@watts_collective_1998]
 - **Community structure**: Vertices tend to form clusters or communities, where vertices within the same community are more densely connected than those in different communities. This property is prevalent in social networks, where groups of friends or colleagues often form tightly-knit communities. [@leskovec_community_2009]
 - **Scale-free property**: The degree distribution of the graph follows a power-law, meaning that a few vertices have a very high degree, while most vertices have a low degree. This is often observed in social networks, where a small number of individuals (e.g., celebrities) have many connections, while the majority of users have relatively few connections. [@barabasi_emergence_1999]
 
 Graph vertex embeddings are a powerful technique for representing vertices in a graph as low-dimensional vectors, enabling various machine learning tasks such as vertex classification, link prediction [@leskovec_predicting_2010], and community detection. The effectiveness of these embeddings often depends on the underlying graph structure and the methods used to generate them. When faced with large graphs, the challenge of efficiently computing these embeddings while preserving the graph's structural properties becomes paramount. Additionally, most real-world graphs are dynamic, with vertices and edges being added or removed over time. This dynamic nature introduces additional challenges in maintaining accurate and up-to-date embeddings, as the graph's structure evolves. 
 
-When a distributed system assigns newly arriving vertices to partitions before their full neighborhood is known, it faces a practical trade-off: using more partitions improves scalability but can harm embedding quality and partition balance, while hedging an uncertain assignment by replicating a vertex across multiple partitions can recover embedding quality at the cost of additional computation. Despite its practical relevance, this trade-off has not been systematically studied in the context of dynamic graph embedding.
+Motivation to use distributed systems for graph embedding arises from the need to handle large-scale graphs that cannot fit into the memory of a single machine. Distributed systems allow for parallel processing and storage of graph data across multiple machines. However, distributing the graph across multiple machines introduces new challenges, particularly in terms of partitioning the graph and maintaining embedding quality. 
+
+When a distributed system assigns newly arriving vertices to partitions before their full neighborhood is known, it faces a practical trade-off: using more partitions improves scalability but can harm embedding quality and partition balance, while hedging an uncertain assignment by replicating a vertex across multiple partitions can recover embedding quality at the cost of additional computation. Despite its practical relevance, this trade-off has not been systematically studied in the context of dynamic graph embedding. This paper aims to fill this gap by empirically studying how partition assignment parameters, specifically the number of partitions and the replication factor, affect embedding quality, partition balance, and computational cost in distributed dynamic graph embedding systems.
 
 # Problem Formulation
 
-Given a dynamic graph where nodes arrive online and a distributed dynamic Node2Vec-style embedding model is maintained, we want to know how partitions should be assigned to new nodes to balance:
+Given a dynamic graph where vertices arrive online and a distributed dynamic Node2Vec-style embedding model is maintained, we want to know how partitions should be assigned to new vertices to balance:
 
 * embedding quality,
 * partition balance,
 * computational cost of maintaining the assignment
 
 
-This paper aims to empirically study and characterize the trade-offs induced by two partition assignment parameters, the number of partitions and the replication factor, for online node arrivals in distributed dynamic graph embedding systems.
-Rather than proposing a new embedding model, the focus is on partition assignment heuristics and their systemic impact. In this paper, existing embedding model is used which handles dynamic nature of the evolving graph.
-
-
 # Related Work 
 
-Graph vertex embedding is a well-studied area, with various methods proposed to generate low-dimensional representations of nodes in a graph. State of the art method which is widely used is Node2Vec [@grover_node2vec_2016] which uses random walks to capture the local and global structure of the graph. Node2Vec generates embeddings by performing biased random walks on the graph, allowing it to explore both local and global structures. The method has been shown to be effective in capturing community structures and generating meaningful embeddings for various machine learning tasks. As its improvement, DistGER [@fang_distributed_2023] is a distributed graph embedding method that extends Node2Vec by leveraging distributed computing to handle large graphs. DistGER uses a similar random walk approach but optimizes walk sampling in order to maximize the information gain when selecting the next vertex to visit. 
+Graph vertex embedding is a well-studied area, with various methods proposed to generate low-dimensional representations of vertices in a graph. State of the art method which is widely used is Node2Vec [@grover_node2vec_2016] which uses random walks to capture the local and global structure of the graph. Node2Vec generates embeddings by performing biased random walks on the graph, allowing it to explore both local and global structures. The method has been shown to be effective in capturing community structures and generating meaningful embeddings for various machine learning tasks. As its improvement, DistGER [@fang_distributed_2023] is a distributed graph embedding method that extends Node2Vec by leveraging distributed computing to handle large graphs. DistGER uses a similar random walk approach but optimizes walk sampling in order to maximize the information gain when selecting the next vertex to visit. 
 
 Another approach to scale Node2Vec is proposed in [@lombardo_scalable_2019] which is based on actor model and uses a distributed framework to generate embeddings for large graphs. This method allows for parallel processing of random walks, significantly improving the efficiency of embedding generation in terms of time and resource usage.
 
 The common ground for these methods is that they generate walks which are later used to train Word2Vec model [@church_word2vec_2017] commonly used for generating embeddings in natural language processing tasks. 
 
-During the learning process, there are several state of the art approaches to parallelize the training of word2vec model. Commonly used approach in distributed environment is ensemble learning [@ji_ensemble_2007] which combines multiple smaller models to create a larger model. Final mode is created by aggregating smaller models using parameter server architecture [@li_parameter_2013]. 
+During the learning process, there are several state of the art approaches to parallelize the training of word2vec model. Commonly used approach in distributed environment is ensemble learning [@ji_ensemble_2007] which combines multiple smaller models to create a larger model. Final model is created by aggregating smaller models using parameter server architecture [@li_parameter_2013]. 
+
+All enumerated methods are aimed for static graphs, where the graph structure does not change over time. However, in many real-world applications, graphs are dynamic and change over time, requiring dynamic graph embedding methods that can adapt to changes in the graph structure.
 
 The main challenge to address the problem of distributed graph vertex embedding is partitioning the graph in a way that preserves the community structure while ensuring that the partitions are balanced and can be processed efficiently in a distributed environment. Up until recently, most partitioning methods covered only small graphs or graphs without inherent community structure, like in [@benlic_effective_2010] [@sanders_distributed_2012] [@sanders_engineering_2011] [@romero_ruiz_memetic_2018]. The main focus of these methods is static graph partitioning meaning that the graph is partitioned once and then used for processing. See [@catalyurek_more_2023] for a broader, more recent survey of advances in graph and hypergraph partitioning. However, in many real-world applications, graphs are dynamic and change over time, requiring dynamic partitioning methods that can adapt to changes in the graph structure. In [@ugander_balanced_2013], a variant of label propagation algorithm is proposed for balancing partitions, but it lacks the ability to adapt to changes in the graph structure over time and it does not study the impact of partitioning on embedding quality.
 
-For dynamic graph partitioning, there are several methods available in literature like [@nicoara_hermes_2015] [@huang_leopard_2016] [@xu_loggp_2014] and [@vaquero_adaptive_2013]. These methods focus on partitioning dynamic graphs by considering the changes in the graph structure over time and adapting the partitioning accordingly. However, these methods have not been used in embedding applications so far, and their effectiveness in generating high-quality embeddings in a distributed environment remains an open question. However, temporal graph embedding methods like [@mahdavi_dynnode2vec_2018] have been proposed to address the problem of dynamic graph embedding. These methods focus on generating embeddings for dynamic graphs by considering the temporal evolution of the graph structure. However, these methods do not address the problem of partitioning the graph in a distributed environment, which is crucial for efficient processing and scalability.
+For dynamic graph partitioning, there are several methods available in literature like [@stanton_streaming_2012] and [@tsourakakis_fennel_2014]. These methods focus on partitioning dynamic graphs by considering the changes in the graph structure over time and adapting the partitioning accordingly. However, these methods have not been used in embedding applications so far, and their effectiveness in generating high-quality embeddings in a distributed environment remains an open question.
 
 Distributed graph embedding methods, including scalable distributed approaches to static Node2Vec [@lombardo_scalable_2019] and dynamic Node2Vec variants such as dynnode2vec [@mahdavi_dynnode2vec_2018], enable scalable representation learning on large, evolving graphs. However, in dynamic settings with online node arrivals, a fundamental systems problem arises: newly arriving nodes must be assigned to partitions before sufficient structural or embedding information about their neighborhood is available, and it is unclear how the number of partitions and the degree of assignment redundancy affect the resulting embedding quality and partition balance.
 
@@ -60,7 +58,7 @@ Most existing distributed embedding systems assume either:
 
 This paper makes the following contributions:
 
-* We propose a systematic empirical study of how partition count and replication factor affect partition assignment quality for online node arrivals in distributed dynamic graph embedding systems.
+* We propose a systematic empirical study of how partition count and replication factor affect partition assignment quality for online vertex arrivals in dynamic graph embedding systems.
 * We evaluate the impact of these partition assignment parameters on embedding quality, partition balance, and edge cut, and show that increasing the replication factor can recover embedding quality lost to early, uncertain assignment at the cost of additional computation.
 * We provide empirical evidence and analysis of this quality/computation trade-off, contributing to the understanding of how to effectively manage partitioning in distributed dynamic graph embedding systems.
 
@@ -95,7 +93,7 @@ Buffer also defines new graph snapshot. Let $G_n$ be the graph snapshot after pr
 ## Graph partitioning
 
 
-Let $\mathcal{P} = \{p_1, \dots, p_P\}$ denote the current partitioning of the graph into $P$ partitions. The partition of a vertex is the partition that contains the most neighbors of the vertex in the buffer. The partitioning strategy assigns the vertex to the partition that contains the most neighbors of the vertex in the buffer. The partitioner also has a replication factor, which allows it to assign a vertex to multiple partitions if there are multiple partitions that contain a similar number of neighbors of the vertex in the buffer. The partitioner has a capacity penalty, which penalizes partitions that have more vertices than the average partition size, to encourage more balanced partitions.
+Let $\mathcal{P} = \{p_1, \dots, p_P\}$ denote the current partitioning of the graph into $P$ partitions. The partition of a vertex is the partition with the highest score. The partitioning strategy assigns the vertex to the partition that contains the most neighbors of the vertex in the buffer, while keeping the partition sizes balanced. The partitioner also has a replication factor, which allows it to assign a vertex to multiple partitions. The partitioner has a capacity penalty, which penalizes partitions that have more vertices than the average partition size, to encourage more balanced partitions.
 
 Formally, the score of partition $p_i \in \mathcal{P}$ for a vertex $v$ is defined as:
 
@@ -103,13 +101,13 @@ $$ S(p_i, v) = N(p_i, v) - \mu \cdot \max\left(0, |p_i| - \alpha \cdot (1 + \eps
 
 where $N(p_i, v)$ is the number of neighbors of vertex $v$ in partition $p_i$ in the buffer, $\mu$ is the capacity penalty coefficient, $\alpha$ is the weight of the average partition size in the capacity penalty, $\epsilon$ is the imbalance tolerance, and $|p_i|$ is the size of partition $p_i$. The partitioner assigns the vertex to the top $RF$ partitions of $\mathcal{P}$ with the highest scores, where $RF$ is the replication factor. If there are multiple partitions with same scores, the partitioner randomly assigns the vertex to some of those partitions until it reaches the replication factor.
 
-**Partitioning time complexity.** Because the partitioner only considers neighbors observed within the current buffer, its per-buffer cost is bounded independently of the total graph size processed so far. Let $B$ denote the buffer size and let $\deg_B(v)$ denote the number of buffer-local edge endpoints incident to vertex $v$, so that $\sum_v \deg_B(v) \le 2B$. For each buffered edge, looking up the current partition membership of its endpoints and incrementing the corresponding neighbor-count tallies $N(p_i, v)$ takes $O(1)$ amortized time per edge endpoint per replica, giving $O(RF \cdot B)$ total work to compute all neighbor counts for the buffer, since a vertex can belong to up to $RF$ partitions. The average partition size term $\frac{1}{P}\sum_{p_j \in \mathcal{P}}|p_j|$ is maintained incrementally and reused across all vertices in the buffer, costing $O(P)$ per buffer rather than per vertex. For each of the at most $2B$ vertices touched by the buffer, computing $S(p_i, v)$ for all $P$ partitions and selecting the top $RF$ scores costs $O(P)$ per vertex. The total cost of partitioning one buffer is therefore
+Because the partitioner only considers neighbors observed within the current buffer, its per-buffer cost is bounded independently of the total graph size processed so far. Let $B$ denote the buffer size and let $\deg_B(v)$ denote the number of buffer-local edge endpoints incident to vertex $v$, so that $\sum_v \deg_B(v) \le 2B$. For each buffered edge, looking up the current partition membership of its endpoints and incrementing the corresponding neighbor-count tallies $N(p_i, v)$ takes $O(1)$ amortized time per edge endpoint per replica, giving $O(RF \cdot B)$ total work to compute all neighbor counts for the buffer, since a vertex can belong to up to $RF$ partitions. The average partition size term $\frac{1}{P}\sum_{p_j \in \mathcal{P}}|p_j|$ is maintained incrementally and reused across all vertices in the buffer, costing $O(P)$ per buffer rather than per vertex. For each of the at most $2B$ vertices touched by the buffer, computing $S(p_i, v)$ for all $P$ partitions and selecting the top $RF$ scores costs $O(P)$ per vertex. The total cost of partitioning one buffer is therefore
 
 $$ O\big(B \cdot (P + RF)\big) $$
 
 which, for fixed $P$ and $RF$, is $O(B)$: linear in the buffer size and independent of the total number of vertices or edges in the graph processed so far. Over a stream of $T$ buffers covering $N = T \cdot B$ events in total, the cumulative partitioning cost is $O(N \cdot (P + RF))$, i.e., linear in the total number of events for the fixed, small values $P \in \{1,2,4,8\}$ and $RF \in \{1,3\}$ used in this study.
 
-This bound is asymptotically dominated by the cost of the embedding step for the same buffer. dynnode2vec generates `n_walks` random walks of length `walk_size` from each of the (up to $2B$) evolving vertices, and trains skip-gram over the resulting corpus for several epochs, at a cost of $O(|\Delta V_t| \cdot \text{n\_walks} \cdot \text{walk\_size} \cdot \text{window\_size} \cdot \text{epochs})$ per partition replica. Both costs are linear in the number of vertices touched by the buffer, but the constant factor for embedding (walks $\times$ walk length $\times$ window size $\times$ epochs) is much larger than partitioning's constant factor ($P + RF \le 11$ in this study), which is why partitioning time is negligible compared to embedding time in practice, as observed in the Results section below.
+This bound is asymptotically dominated by the cost of the embedding step for the same buffer. dynnode2vec generates `n_walks` random walks of length `walk_size` from each of the (up to $2B$) evolving vertices, and trains skip-gram over the resulting corpus for several epochs, at a cost of $O(|\Delta V_t| \cdot \text{n\_walks} \cdot \text{walk\_size} \cdot \text{window\_size} \cdot \text{epochs})$ per partition replica. Both costs are linear in the number of vertices touched by the buffer, but the constant factor for embedding (walks $\times$ walk length $\times$ window size $\times$ epochs) is much larger than partitioning's constant factor ($P + RF \le 11$ in this study), which is why partitioning time is negligible compared to embedding time in practice.
 
 
 ## Embedding model
@@ -121,7 +119,7 @@ In the following listing, pseudocode for the dynnode2vec algorithm is presented:
 
 
 ```
-Input: Dynamic graphs G1, G2, …, GT
+Input: Graph snapshots G1, G2, …, GT
 Output: Embeddings Z1, Z2, …, ZT
 
 // t = 1
@@ -140,7 +138,7 @@ For t = 2 … T:
 
      // Dynamic Skip-gram: initialize from previous time
      Initialize Skip-gram_t with weights of Skip-gram_{t-1}
-     Update Skip-gram_t vocabulary for any new nodes
+     Update Skip-gram_t vocabulary for any new vertices
      Train Skip-gram_t on Walk_n
      Extract Z_t from Skip-gram_t
 End For
@@ -152,7 +150,7 @@ Since one vertex can be assigned to multiple partitions, each partition produces
 
 $$ z_u = \frac{1}{|P_u|} \sum_{p \in P_u} z_p $$
 
-where $P_u = \{p | u \in V_p\}$ is the set of partitions that contain vertex $u$. This averaging process allows the system to combine information from multiple partitions, potentially improving the quality of the final embedding by leveraging diverse perspectives on the vertex's relationships within the graph.
+where $P_u = \{p | u \in V_p\}$ is the set of partitions that contain vertex $u$. This averaging process allows the system to combine information from multiple partitions, potentially improving the quality of the final embedding by leveraging diverse perspectives on the vertex's relationships within the graph. This step requires communication between partitions to share the embeddings of vertices that are replicated across multiple partitions. The communication overhead is proportional to the number of replicated vertices and the size of their embeddings. 
 
 If replication factor is set to 1, then the final embedding of vertex $u$ is simply the embedding from the single partition that contains the vertex:
 
@@ -167,9 +165,9 @@ $$ z_u = 0 $$
 ## Benchmarks and evaluation metrics
 
 
-To evaluate the effectiveness of the graph vertex embeddings generated in a distributed environment with community-aware partitioning, several criteria are considered:
+To evaluate the effectiveness of the graph vertex embeddings generated using community-aware partitioning, several criteria are considered:
 
-**Embedding Quality**: The quality of the embeddings is assessed using metrics such as F1-score of reconstructed graphs [@yip_restore_2023], which measures how well the embeddings capture the relationships between vertices in the original graph. Higher F1-scores indicate better preservation of graph structure in the embeddings. Let $G = (V,E)$ be the original graph and $G' = (V,E')$ be the reconstructed graph from embeddings. $G'$ is constructed by connecting the $m$ closest vertex pairs in the embedding space, where $m$ is the number of edges in the original graph. The F1-score is calculated as follows:
+**Embedding Quality**: The quality of the embeddings is assessed using F1-score of reconstructed graph [@yip_restore_2023], which measures how well the embeddings capture the relationships between vertices in the original graph. Higher F1-scores indicate better preservation of graph structure in the embeddings. Let $G = (V,E)$ be the original graph and $G' = (V,E')$ be the reconstructed graph from embeddings. $G'$ is constructed by connecting the $m$ closest vertex pairs in the embedding space, where $m$ is the number of edges in the original graph. The F1-score is calculated as follows:
 
 $$ F1 = 2 * \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} $$
 
@@ -181,7 +179,7 @@ $$ \text{Recall} = \frac{1}{|V|} \sum_{v \in V} \frac{|N(v) \cap N'(v)|}{|N(v)|}
 
 and $N(v)$ and $N'(v)$ are the neighbors of vertex $v$ in the original and reconstructed graphs, respectively.
 
-**Partition Quality**: The quality of the partitions is evaluated based on metrics such as edge cut, which measures the number of edges that connect vertices in different partitions. Lower edge cuts indicate better preservation of community structures within partitions. Edge cut is defined as: 
+**Partition Quality**: The quality of the partitions is evaluated using edge cut, which measures the number of edges that connect vertices in different partitions. Lower edge cuts indicate better preservation of community structures within partitions. Edge cut is defined as: 
 
 $$ \text{EdgeCut} = \frac{1}{|E|} \sum_{(u,v) \in E} \mathbb{I}(p(u) \neq p(v)) $$
 
