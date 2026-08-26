@@ -416,10 +416,10 @@ Table: F1 reconstruction score, edge cut, and balance for AstroPh with buffered 
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
-| 1 | 26.58% | 0%      | 1 |
-| 2 | 28.72% | 30.44%  | 1.21 |
-| 4 | 25.67% | 53.79%  | 1.26 |
-| 8 | 23.13% | 71.56%  | 1.27 |
+| 1               | 26.17% ± 0.57% | 0%   | 1 |
+| 2               | 24.88% ± 2.72% | 30.44%   | 1.21|
+| 4               | 24.30% ± 0.98% | 53.79%  | 1.26 |
+| 8               | 21.45% ± 1.19% | 71.56%  | 1.27 |
 Table: F1 reconstruction score, edge cut, and balance for AS-Oregon with buffered dynnode2vec, RF = 1.
 
 
