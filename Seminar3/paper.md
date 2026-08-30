@@ -391,7 +391,6 @@ Using the temporal test command (`vv temporal_test`) with the buffered event pro
 | 2               | 45.81% ± 0.59%           | 23%      | 1.31 |
 | 4               | 48.06% ± 0.53%           | 39%      | 1.63 |
 | 8               | 54.81% ± 1.66%           | 48%      | 1.75 |
-
 Table: F1 reconstruction score, edge cut, and balance for CITESEER with buffered dynnode2vec, RF = 1.
 
 
@@ -401,7 +400,6 @@ Table: F1 reconstruction score, edge cut, and balance for CITESEER with buffered
 | 2               | 54.11% ± 0.18%           | 32%      | 1.10 |
 | 4               | 54.51% ± 0.15%           | 50%      | 1.20 |
 | 8               | 49.87% ± 0.16%           | 59%      | 1.31 |
-
 Table: F1 reconstruction score, edge cut, and balance for DBLP with buffered dynnode2vec, RF = 1.
 
 
@@ -425,10 +423,10 @@ Table: F1 reconstruction score, edge cut, and balance for AS-Oregon with buffere
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
-| 1 | 17.63% | 0%     | 1 |
-| 2 | 24.35% | 33.07% | 1.09 |
-| 4 | 31.44% | 49.18% | 1.08 |
-| 8 | 30.68% | 61.99% | 1.25 |
+| 1               | 18.03% ± 0.44% | 0%    | 1    |
+| 2               | 24.84% ± 0.38% | 33.07% | 1.09 |
+| 4               | 27.44% ± 2.83% | 49.18% | 1.08 |
+| 8               | 32.36% ± 1.24% | 61.99% | 1.25 |
 Table: F1 reconstruction score, edge cut, and balance for Enron with buffered dynnode2vec, RF = 1.
 
 As expected, edge cut increases monotonically with the number of partitions across all datasets, since splitting the vertex set into more partitions necessarily severs more cross-community edges. Balance stays close to the ideal value of 1 for DBLP, AstroPh, AS-Oregon, and Enron (at most 1.35 even at $P=8$), confirming that the neighbor-based partitioner with capacity penalty distributes vertices close to evenly on these datasets without an explicit load-balancing step. CITESEER is a notable exception: its balance grows to 1.63 at $P=4$ and 1.75 at $P=8$, indicating a substantially less even partition size distribution than on the other datasets under the same capacity penalty settings.
