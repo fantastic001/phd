@@ -378,7 +378,15 @@ The following plots show the (smoothed) average balance over iterations for each
 
 Across all datasets, $\mu = 0$ (no capacity penalty) produces the worst balance, matching the partition count almost exactly ($B \approx 1.5 + P/4$ at $P$ partitions), since vertices are placed purely by neighbor affinity with no regard for partition size. Increasing $\mu$ from 0 to 1 yields the largest balance improvement; beyond $\mu = 1$–$1.5$, returns diminish and balance mostly plateaus, with CITESEER remaining the hardest dataset to balance at every $\mu$ value tested.
 
+## Buffer size sensitivity analysis
 
+We analyzed the impact of different buffer sizes on the embedding quality and time performance of the buffered dynnode2vec algorithm.
+
+![Buffer size sensitivity analysis](png/citeseer-buffer-timing.png)
+
+![Buffer size sensitivity analysis](png/astroph-buffer-timing.png)
+
+The plots above show the F1 reconstruction score and the time taken for embedding as a function of buffer size for CITESEER and AstroPh datasets. The results indicate that larger buffer sizes generally lead to better embedding quality, as more information is available for partitioning and embedding. However, larger buffers also increase the time taken for partitioning, as more vertices and edges need to be processed in each buffer.
 
 ## Embedding quality, partition balance and edge cut
 
