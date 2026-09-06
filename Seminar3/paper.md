@@ -445,6 +445,26 @@ Across the five datasets, the magnitude of the F1 score change from $P=1$ to $P=
 
 Partitioning time itself was found to be negligible compared to embedding time in all experiments, consistent with the $O(B \cdot (P + RF))$ per-buffer complexity bound derived in the Graph partitioning section, whose constant factor is much smaller than the embedding step's; the dominant cost of processing a buffer is the embedding computation on the slowest (largest or most active) partition.
 
+## Random partitioner baseline
+
+To isolate how much of the neighbor-based partitioner's embedding quality comes from preserving neighborhood locality, we repeated the buffered dynnode2vec experiment with a *random partitioner* that assigns each vertex to one of the $P$ partitions uniformly at random, ignoring its neighbors entirely. All other settings (buffer size 1000, $RF = 1$, and the dataset-specific embedding hyperparameters listed above) are unchanged. Results for CITESEER and AstroPh, averaged over 3 iterations of the buffered stream, are reported below.
+
+| P | F1 | Edge cut | Balance |
+|---|------|----------|---------|
+| 2 | 0.03% ± 0.02% | 50.01% | 1.02 |
+| 4 | 0.03% ± 0.03% | 70.89% | 1.32 |
+| 8 | 0.04% ± 0.03% | 81.58% | 1.61 |
+Table: F1 reconstruction score, edge cut, and balance for CITESEER with a random partitioner, RF = 1.
+
+| P | F1 | Edge cut | Balance |
+|---|------|----------|---------|
+| 2 | 0.04% ± 0.02% | 49.98% | 1.00 |
+| 4 | 0.03% ± 0.02% | 70.86% | 1.31 |
+| 8 | 0.02% ± 0.01% | 81.43% | 1.60 |
+Table: F1 reconstruction score, edge cut, and balance for AstroPh with a random partitioner, RF = 1.
+
+Compared with the neighbor-based partitioner, which reaches F1 scores of roughly 45–55% on CITESEER and 46–55% on AstroPh at the same partition counts, random assignment collapses reconstruction quality to essentially zero, with F1 below 0.05% in every configuration. This confirms that the neighbor partitioner's F1 scores are driven by preserving neighborhood locality across partitions rather than by the embedding algorithm alone: once locality is destroyed, the per-partition embeddings become mutually incompatible and the averaged global embedding reconstructs the graph no better than chance. Edge cut is correspondingly far higher under random assignment (50–82%) than under the neighbor partitioner (23–65%), and closely tracks the value $(P-1)/P$ expected when edge endpoints are placed independently and uniformly at random (50%, 75%, and 87.5% for $P = 2, 4, 8$ respectively). Notably, the neighbor partitioner attains competitive embedding quality while keeping edge cut well below this random baseline, indicating that it genuinely concentrates each vertex's neighborhood within its assigned partition.
+
 ## Effect of replication factor
 
 Increasing the replication factor $RF$ allows a vertex to be embedded independently in more than one partition, with the final embedding obtained by averaging the per-partition embeddings as described in the Embedding model section. This trades additional computation and storage for a more informed, less committal partition assignment. In a smaller exploratory hyperparameter sweep on CITESEER with $P = 4$, buffer size 1000, and capacity penalty $\mu = 1$ (run separately from, and not directly comparable to, the main results table above, which used a longer run), increasing the replication factor from $RF = 1$ to $RF = 3$ raised the F1 reconstruction score from 44.35% to 69%, indicating that hedging the partition assignment across multiple partitions can substantially mitigate the quality loss introduced by early, uncertain assignment decisions. This comes at the cost of up to $RF\times$ the embedding computation per vertex, illustrating a quality/computation trade-off: assigning a vertex to a single partition is cheaper but riskier, while replicating it across several partitions is more expensive but more robust to a suboptimal initial assignment. Because this observation comes from a single, small-scale exploratory run, it should be read as preliminary evidence rather than a robust result; a systematic replication factor sweep across datasets and partition counts is left to future work.
