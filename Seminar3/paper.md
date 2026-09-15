@@ -11,6 +11,7 @@ bibliography: ./refs.bib
 A graph is a mathematical structure consisting of vertices (or nodes) connected by edges. Graphs are widely used to model relationships and interactions in various domains [@van_der_hofstad_random_2024], such as social networks [@leskovec_signed_2010] [@backstrom_group_2006] [@rozemberczki_twitch_2021], collaboration networks [@savic_analysis_2017], terrorist networks [@krebs_mapping_2002] and blog citation networks [@adamic_political_2005]. In these applications, the relationships between entities can be represented as edges connecting the corresponding vertices.
 
 In many real-world graphs, which model real-world phenomena, there are several properties that are often observed [@watts_collective_1998] [@zachary_information_1977] [@albert_statistical_2002]:
+
 - **Small-world property**: Most pairs of vertices can be connected by a short path, even in large graphs. This is often referred to as the "six degrees of separation" phenomenon. [@watts_collective_1998]
 - **Community structure**: Vertices tend to form clusters or communities, where vertices within the same community are more densely connected than those in different communities. This property is prevalent in social networks, where groups of friends or colleagues often form tightly-knit communities. [@leskovec_community_2009]
 - **Scale-free property**: The degree distribution of the graph follows a power-law, meaning that a few vertices have a very high degree, while most vertices have a low degree. This is often observed in social networks, where a small number of individuals (e.g., celebrities) have many connections, while the majority of users have relatively few connections. [@barabasi_emergence_1999]
@@ -23,7 +24,7 @@ When a distributed system assigns newly arriving vertices to partitions before t
 
 # Problem Formulation
 
-Given a dynamic graph where vertices arrive online and a distributed dynamic Node2Vec-style embedding model is maintained, we want to know how partitions should be assigned to new vertices to balance:
+Given a dynamic graph where vertices arrive online and a distributed dynamic dynnode2vec-style [@mahdavi_dynnode2vec_2018] embedding model is maintained, we want to know how partitions should be assigned to new vertices to balance:
 
 * embedding quality,
 * partition balance,
@@ -81,7 +82,7 @@ global state buffer = {}
 
 when new event (t, u, v) arrives:
     buffer.add((t, u, v))
-    if buffer.size() >= BUFFER_SIZE:
+    if buffer.size() >= MAX_BUFFER_SIZE:
         assign_partitions(buffer)
         update_embeddings(buffer)
         buffer.clear()
@@ -157,9 +158,6 @@ $$ z_u = z_p $$
 
 where $p$ is the partition that contains vertex $u$. In this case, the embedding is solely based on the information available in that single partition, which may limit the quality of the embedding if the partition does not capture sufficient context about the vertex's relationships within the graph.
 
-Additionally, if vertex is not partitioned yet, then the final embedding of vertex $u$ is set to zero vector:
-
-$$ z_u = 0 $$
 
 ## Benchmarks and evaluation metrics
 
@@ -190,7 +188,7 @@ $$ B = 1 + \frac{1}{K} \sum_{i=1}^{K} \frac{|s_i - \bar{s}|}{\bar{s}} $$
 
 where $K$ is the number of partitions, $s_i$ is the number of vertices assigned to partition $i$, and $\bar{s} = \frac{1}{K} \sum_{i=1}^{K} s_i$ is the average partition size. A perfectly balanced partitioning yields $B = 1$; higher values indicate greater imbalance.
 
-**Partitioning Time**: The time taken to partition the graph is measured to evaluate the efficiency of the partitioning algorithms. Faster partitioning times are preferred, especially for large graphs, as they reduce the overall processing time in a distributed environment. In this paper, partitioning time is analyzed asymptotically via the per-buffer complexity bound derived in the Graph partitioning section, and it is measured directly as wall-clock partitioning and embedding time as a function of buffer size for CITESEER and AstroPh (§"Buffer size sensitivity analysis").
+**Partitioning Time**: The time taken to partition the graph is measured to evaluate the efficiency of the partitioning algorithms. Faster partitioning times are preferred, especially for large graphs, as they reduce the overall processing time in a distributed environment. In this paper, partitioning time is analyzed asymptotically via the per-buffer complexity bound derived in the Graph partitioning section, and it is measured directly as wall-clock partitioning and embedding time as a function of buffer size for CITESEER and AstroPh, in the Buffer size sensitivity analysis section.
 
 **Repartitioning amount**: The amount of repartitioning required when new vertices arrive is measured to assess the stability of the partitioning strategy. Lower amounts of repartitioning indicate that the partitioning strategy is more stable and can handle dynamic changes in the graph without significant disruption. Given two graph snapshots $G_n$ and $G_{n+1}$, the amount of repartitioning is defined as:
 
@@ -233,7 +231,7 @@ Table: Embedding hyperparameters (node2vec $p$, $q$, and embedding dimension) us
 
 ## Datasets
 
-Experiments are performed on five real-world graph datasets, summarized in the table below.
+Experiments are performed on five real-world graph datasets, summarized in the following table.
 
 | Dataset | Nodes | Edges | Average degree | Average clustering coefficient | Density | Modularity |
 | --- | --- | --- |--- | --- | --- | --- |
@@ -262,7 +260,7 @@ These values serve as a rough upper bound against which the effect of partitioni
 
 ## Sensitivity analysis of the capacity penalty parameter 
 
-The most common neighbor partitioner uses a capacity penalty coefficient $\mu$ to discourage assigning vertices to partitions that are already larger than average. This section analyzes the effect of $\mu$ on partition balance, varying $\mu \in \{0, 0.5, 1, 1.5, 2\}$ across all five datasets with 2 and 4 partitions. $\mu = 0$ disables the penalty entirely, so balance is determined purely by neighbor counts; higher $\mu$ increasingly rebalances vertex placement at the expense of prioritizing neighbor locality. The other side of this trade-off — the F1 cost of increasing $\mu$ — is quantified below, from a preliminary hyperparameter search (buffer size 1000, $RF = 1$) conducted on CITESEER and AstroPh over $\mu \in \{0, 0.5, 1\}$:
+The most common neighbor partitioner uses a capacity penalty coefficient $\mu$ to discourage assigning vertices to partitions that are already larger than average. This section analyzes the effect of $\mu$ on partition balance, varying $\mu \in \{0, 0.5, 1, 1.5, 2\}$ across all five datasets with 2 and 4 partitions. $\mu = 0$ disables the penalty entirely, so balance is determined purely by neighbor counts; higher $\mu$ increasingly rebalances vertex placement at the expense of prioritizing neighbor locality. The other side of this trade-off — the F1 cost of increasing $\mu$ — is quantified from a preliminary hyperparameter search (buffer size 1000, $RF = 1$) conducted on CITESEER and AstroPh over $\mu \in \{0, 0.5, 1\}$:
 
 | P | $\mu=0$ | $\mu=0.5$ | $\mu=1$ |
 |---|---------|-----------|---------|
@@ -280,7 +278,7 @@ Table: F1 reconstruction score vs. $\mu$ and partition count for AstroPh (buffer
 | 8 | 58.00% | 44.31% | 49.09% |
 Table: F1 reconstruction score vs. $\mu$ and partition count for CITESEER (buffer size 1000, $RF=1$).
 
-The $\mu=0$ column is flat at the $P=1$ value for every $P$: with the capacity penalty disabled, the partitioner's assignment is dominated by whichever partition first pulls ahead in neighbor count (the same collapse-to-one-partition behavior noted for the balance tables above), so it is not really testing partitioned embedding at all and its high F1 is not a meaningful "$\mu=0$ is best" result. Once $\mu > 0$ forces genuine partitioning, F1 drops noticeably below that flat baseline for most $(P, \mu)$ combinations — most sharply for AstroPh at $\mu=0.5$, $P=8$ (57.00% → 33.93%) — confirming that better balance is bought at a real embedding-quality cost. $\mu=1$ partially recovers quality relative to $\mu=0.5$ in most rows (though not uniformly, e.g. AstroPh $P=4$), which is consistent with $\mu=1$ being the trade-off point chosen for the rest of this paper's experiments, though this preliminary sweep covers only two datasets and $\mu \in \{0, 0.5, 1\}$, not the full $\mu \in \{0, \dots, 2\}$ range used for the balance-only tables above.
+The $\mu=0$ column is flat at the $P=1$ value for every $P$: with the capacity penalty disabled, the partitioner's assignment is dominated by whichever partition first pulls ahead in neighbor count, so it is not really testing partitioned embedding at all and its high F1 is not a meaningful "$\mu=0$ is best" result. Once $\mu > 0$ forces genuine partitioning, F1 drops noticeably below that flat baseline for most $(P, \mu)$ combinations — most sharply for AstroPh at $\mu=0.5$, $P=8$ (57.00% → 33.93%) — confirming that better balance is bought at a real embedding-quality cost. $\mu=1$ partially recovers quality relative to $\mu=0.5$ in most rows (though not uniformly, e.g. AstroPh $P=4$), which is consistent with $\mu=1$ being the trade-off point chosen for the rest of this paper's experiments, though this preliminary sweep covers only two datasets and $\mu \in \{0, 0.5, 1\}$, not the full $\mu \in \{0, \dots, 2\}$ range used for the balance-only tables.
 
 The tables below show the average balance at the final iteration for each combination of $\mu$ and partition count. $B = 1$ is a perfectly balanced partitioning; higher values indicate greater imbalance.
 
@@ -329,56 +327,6 @@ Table: Average balance at the final iteration for DBLP dataset across different 
 | 2.0 | 1.06 | 1.06 |
 Table: Average balance at the final iteration for Enron dataset across different $\mu$ values and partition counts.
 
-The tables below show the average balance across all iterations (not just the last one) for each combination of $\mu$ and partition count, capturing how balance behaves during the stream rather than only at the end.
-
-
-| Penalty | P=2 | P=4 |
-|---|-----|-----|
-| 0.0 | 2.00 | 2.50 |
-| 0.5 | 1.14 | 1.51 |
-| 1.0 | 1.12 | 1.23 |
-| 1.5 | 1.10 | 1.18 |
-| 2.0 | 1.10 | 1.15 |
-Table: Average balance across all iterations for AS-Oregon dataset across different $\mu$ values and partition counts.
-
-
-| Penalty | P=2 | P=4 |
-|---|-----|-----|
-| 0.0 | 2.00 | 2.50 |
-| 0.5 | 1.24 | 1.51 |
-| 1.0 | 1.14 | 1.27 |
-| 1.5 | 1.11 | 1.21 |
-| 2.0 | 1.10 | 1.20 |
-Table: Average balance across all iterations for AstroPh dataset across different $\mu$ values and partition counts.
-
-| Penalty | P=2 | P=4 |
-|---|-----|-----|
-| 0.0 | 2.00 | 2.50 |
-| 0.5 | 1.92 | 2.12 |
-| 1.0 | 1.52 | 1.84 |
-| 1.5 | 1.34 | 1.66 |
-| 2.0 | 1.34 | 1.55 |
-Table: Average balance across all iterations for CITESEER dataset across different $\mu$ values and partition counts.
-
-| Penalty | P=2 | P=4 |
-|---|-----|-----|
-| 0.0 | 2.00 | 2.50 |
-| 0.5 | 1.30 | 1.60 |
-| 1.0 | 1.17 | 1.40 |
-| 1.5 | 1.15 | 1.33 |
-| 2.0 | 1.12 | 1.25 |
-Table: Average balance across all iterations for DBLP dataset across different $\mu$ values and partition counts.
-
-
-
-| Penalty | P=2 | P=4 |
-|---|-----|-----|
-| 0.0 | 2.00 | 2.50 |
-| 0.5 | 1.14 | 1.27 |
-| 1.0 | 1.11 | 1.19 |
-| 1.5 | 1.09 | 1.17 |
-| 2.0 | 1.08 | 1.15 |
-Table: Average balance across all iterations for Enron dataset across different $\mu$ values and partition counts.
 
 
 The following plots show the (smoothed) average balance over iterations for each $\mu$ value, for P=2 and P=4 partitions side by side.
@@ -396,11 +344,11 @@ The following plots show the (smoothed) average balance over iterations for each
 
 Across all datasets, $\mu = 0$ (no capacity penalty) produces the worst balance: at both $P=2$ and $P=4$ the measured balance (2.00 and 2.50, identically across all five datasets) exactly matches the value obtained when every vertex collapses into a single partition, since with no capacity penalty the partition with the most buffer-local neighbors always wins and, once one partition pulls ahead early in the stream, it keeps attracting new vertices. Increasing $\mu$ from 0 to 1 yields the largest balance improvement; beyond $\mu = 1$–$1.5$, returns diminish and balance mostly plateaus, with CITESEER remaining the hardest dataset to balance at every $\mu$ value tested.
 
-This $\mu$-sensitivity sweep was run as a separate experiment from the main $P$/$RF$ results reported in the next section; consequently the $\mu=1$ balance values shown above can differ slightly from the $\mu=1$, $RF=1$ rows of the main results tables in §"Embedding quality, partition balance and edge cut" for the same nominal configuration (e.g. DBLP: 1.03/1.09 here vs. 1.10/1.20 there for $P=2/P=4$) due to run-to-run variance between the two run sets; the qualitative trends — near-perfect balance for DBLP/AstroPh/AS-Oregon/Enron and a harder-to-balance CITESEER — are consistent across both.
+This $\mu$-sensitivity sweep was run as a separate experiment from the main $P$/$RF$ results reported in the next section; consequently the $\mu=1$ balance values shown here can differ slightly from the $\mu=1$, $RF=1$ rows of the main results tables in the embedding quality, partition balance and edge cut section for the same nominal configuration (e.g. DBLP: 1.03/1.09 here vs. 1.10/1.20 there for $P=2/P=4$) due to run-to-run variance between the two run sets; the qualitative trends — near-perfect balance for DBLP/AstroPh/AS-Oregon/Enron and a harder-to-balance CITESEER — are consistent across both.
 
 ## Buffer size sensitivity analysis
 
-We analyzed the impact of different buffer sizes on embedding quality and on wall-clock time performance of the buffered dynnode2vec algorithm, sweeping buffer size $\in \{100, 200, \dots, 2000\}$ at $P=1$ for CITESEER and AstroPh.
+We analyzed the impact of different buffer sizes on embedding quality and on wall-clock time performance of the buffered dynnode2vec algorithm, sweeping buffer size $\in \{100, 200, \dots, 2000\}$ at $P=4$ for CITESEER and AstroPh.
 
 ![CITESEER: last-iteration F1 score, and wall-clock partitioning/embedding time, vs. buffer size](png/citeseer-buffer-timing.png)
 
@@ -408,11 +356,11 @@ We analyzed the impact of different buffer sizes on embedding quality and on wal
 
 Each plot reports three wall-clock-derived series against buffer size: the last-iteration F1 reconstruction score (left axis), and directly measured partitioning time and embedding time, in seconds, summed over the run (right axis). The effect of buffer size on F1 is dataset-dependent rather than uniformly positive: on AstroPh, F1 rises sharply from ~0.27 at buffer size 100 to ~0.50 by buffer size 400 and then continues a shallow upward trend to ~0.53 at buffer size 2000, so larger buffers clearly help. On CITESEER, the opposite pattern holds: F1 is highest at the smallest buffer size tested (~0.56 at 100–200) and trends down, noisily, to ~0.42–0.49 for most buffer sizes above 600, only partially recovering at a few buffer sizes (e.g. ~0.52 at 1700) before ending at ~0.48 at buffer size 2000 — larger buffers do not generally help CITESEER, and the relationship is closer to a shallow decline with high variance than to a monotone improvement.
 
-Both wall-clock series show partitioning time increasing with buffer size, consistent with the $O(B \cdot (P+RF))$ per-buffer cost, while embedding time decreases with buffer size on AstroPh (from ~20,500s at buffer 100 to ~8,700s at buffer 2000, as fewer, larger re-embedding steps reduce restart overhead) and stays roughly flat on CITESEER (~130–145s across the whole range). Partitioning time is a much smaller share of total time than embedding time at small buffer sizes (e.g. CITESEER at buffer 100: ~5s partitioning vs. ~145s embedding, a ~30x gap), but that gap narrows substantially at larger buffer sizes — at buffer size 1000, the value used throughout the rest of this paper, partitioning time is roughly 20–30% of embedding time on both datasets (CITESEER: ~45s vs. ~140s; AstroPh: ~1,700s vs. ~10,000s), not the order-of-magnitude difference "negligible" would suggest. Partitioning time therefore remains smaller than embedding time at every buffer size tested, but the margin should be read as "smaller," not uniformly "negligible," particularly at the buffer size actually used elsewhere in the paper.
+Both wall-clock series show partitioning time increasing with buffer size, consistent with the $O(B \cdot (P+RF))$ per-buffer cost, while embedding time decreases with buffer size on AstroPh (from ~20,500s at buffer 100 to ~8,700s at buffer 2000, as fewer, larger re-embedding steps reduce restart overhead) and stays roughly flat on CITESEER (~130–145s across the whole range). Partitioning time is a much smaller share of total time than embedding time at small buffer sizes (e.g. CITESEER at buffer 100: ~5s partitioning vs. ~145s embedding, a ~30x gap), but that gap narrows substantially at larger buffer sizes — at buffer size 1000, the value used throughout the rest of this paper, partitioning time is roughly 20–30% of embedding time on both datasets (CITESEER: ~45s vs. ~140s; AstroPh: ~1,700s vs. ~10,000s). Partitioning time therefore remains smaller than embedding time at every buffer size tested.
 
 ## Embedding quality, partition balance and edge cut
 
-Using the temporal test command (`vv temporal_test`) with the buffered event processing pipeline described in the System overview, the following tables report, for each dataset and number of partitions $P \in \{1, 2, 4, 8\}$ with replication factor $RF = 1$, the F1 reconstruction score, the edge cut, and the balance of the resulting partitions, averaged over 10 iterations of the buffered stream.
+Using the pipeline described in the system overview, the following tables report, for each dataset and number of partitions $P \in \{1, 2, 4, 8\}$ with replication factor $RF = 1$, the F1 reconstruction score, the edge cut, and the balance of the resulting partitions, averaged over 10 iterations of the buffered stream.
 
 
 | P | F1 | Edge cut | Balance |
@@ -459,28 +407,28 @@ Table: F1 reconstruction score, edge cut, and balance for AS-Oregon with buffere
 | 8               | 32.36% ± 1.24% | 61.99% | 1.25 |
 Table: F1 reconstruction score, edge cut, and balance for Enron with buffered dynnode2vec, RF = 1.
 
-As expected, edge cut increases monotonically with the number of partitions across all datasets, since splitting the vertex set into more partitions necessarily severs more cross-community edges. Balance stays close to the ideal value of 1 for DBLP, AstroPh, AS-Oregon, and Enron (at most 1.35 even at $P=8$), confirming that the neighbor-based partitioner with capacity penalty distributes vertices close to evenly on these datasets without an explicit load-balancing step. CITESEER is a notable exception: its balance grows to 1.63 at $P=4$ and 1.75 at $P=8$, indicating a substantially less even partition size distribution than on the other datasets under the same capacity penalty settings.
+As expected, edge cut increases monotonically with the number of partitions across all datasets, since splitting the vertex set into more partitions necessarily severs more cross-community edges. Balance stays close to the ideal value of 1 for DBLP, AstroPh, AS-Oregon, and Enron (at most 1.35 even at $P=8$), confirming that the neighbor-based partitioner with capacity penalty distributes vertices close to evenly on these datasets without an explicit load-balancing step. CITESEER is a notable exception: its imbalance grows to 1.63 at $P=4$ and 1.75 at $P=8$, indicating a substantially less even partition size distribution than on the other datasets under the same capacity penalty settings.
 
 The effect of partitioning on embedding quality (F1), however, is dataset-dependent. On CITESEER, DBLP, and Enron, F1 score remains stable or even improves as $P$ increases, despite the growing edge cut: this suggests that, on these graphs, most of a vertex's relevant neighborhood is captured within its own partition, so splitting the graph does not meaningfully harm the quality of the embedding that is reconstructed from local, per-partition context.
 
-CITESEER stands out further still: even at $P=1$, its buffered F1 score (47%) already exceeds the static node2vec baseline (34.82%) reported above, and it continues to rise with $P$, reaching 54.81% at $P=8$.
+CITESEER stands out further still: even at $P=1$, its buffered F1 score (47%) already exceeds the static node2vec baseline (34.82%) reported in the datasets section, and it continues to rise with $P$, reaching 54.81% at $P=8$.
 
-On AstroPh and AS-Oregon, F1 is lower at $P=8$ than at $P=1$, since a larger share of each vertex's neighbors end up outside its assigned partition, and this information is not available to the local embedding process. AstroPh degrades monotonically with $P$; AS-Oregon also decreases monotonically from $P=1$ through $P=8$ (26.17% → 24.88% → 24.30% → 21.45%), though more gently, and, per the significance analysis below, only the $P=1$ vs $P=8$ gap is statistically distinguishable from run-to-run noise.
+On AstroPh and AS-Oregon, F1 is lower at $P=8$ than at $P=1$, since a larger share of each vertex's neighbors end up outside its assigned partition, and this information is not available to the local embedding process. AstroPh degrades monotonically with $P$; AS-Oregon also decreases monotonically from $P=1$ through $P=8$ (26.17% → 24.88% → 24.30% → 21.45%), though more gently, and, per the significance analysis in the statistical significance of the partition-count effect section, only the $P=1$ vs $P=8$ gap is statistically distinguishable from run-to-run noise.
 
 
-Across the five datasets, the signed F1 change from $P=1$ to $P=8$ ($\Delta F1 = F1_{P=8} - F1_{P=1}$) correlates most strongly with graph density (Spearman $\rho \approx -0.7$), and more weakly with modularity ($\rho \approx +0.4$) and average clustering coefficient ($\rho \approx -0.3$). With only five data points, none of these correlations reaches conventional statistical significance ($p \approx 0.19$ for the density correlation), so they should be read as suggestive rather than confirmatory. Even taken at face value, none of these statistics cleanly separates the two groups above with a single threshold: CITESEER, part of the stable/improving group, is denser than AS-Oregon, which degrades; and Enron combines the lowest density, the lowest modularity among the stable group, and only moderate clustering, yet shows the largest F1 improvement of any dataset in the study. This suggests density is the closest available proxy among the properties measured here, but not a complete explanation, and a larger dataset sample would be needed to identify the actual driver with confidence.
+Across the five datasets, the signed F1 change from $P=1$ to $P=8$ ($\Delta F1 = F1_{P=8} - F1_{P=1}$) correlates most strongly with graph density (Spearman $\rho \approx -0.7$), and more weakly with modularity ($\rho \approx +0.4$) and average clustering coefficient ($\rho \approx -0.3$). With only five data points, none of these correlations reaches conventional statistical significance ($p \approx 0.19$ for the density correlation), so they should be read as suggestive rather than confirmatory. Even taken at face value, none of these statistics cleanly separates the two groups with a single threshold: CITESEER, part of the stable/improving group, is denser than AS-Oregon, which degrades; and Enron combines the lowest density, the lowest modularity among the stable group, and only moderate clustering, yet shows the largest F1 improvement of any dataset in the study. This suggests density is the closest available proxy among the properties measured here, but not a complete explanation, and a larger dataset sample would be needed to identify the actual driver with confidence.
 
-Partitioning time itself was consistently smaller than embedding time, as directly measured by wall-clock partitioning and embedding time in the buffer size sensitivity experiments above (§"Buffer size sensitivity analysis"): at buffer size 1000, the value used throughout the P/RF sweep, partitioning time is roughly 20–30% of embedding time on both CITESEER and AstroPh, growing to a much larger margin at small buffer sizes. This is consistent with the $O(B \cdot (P + RF))$ per-buffer complexity bound derived in the Graph partitioning section, whose constant factor is smaller than the embedding step's; the dominant cost of processing a buffer is the embedding computation on the slowest (largest or most active) partition, though partitioning is not negligible enough to ignore entirely at the buffer sizes used here.
+Partitioning time itself was consistently smaller than embedding time, as directly measured by wall-clock partitioning and embedding time in the buffer size sensitivity experiments in the buffer size sensitivity analysis section: at buffer size 1000, the value used throughout the P/RF sweep, partitioning time is roughly 20–30% of embedding time on both CITESEER and AstroPh, growing to a much larger margin at small buffer sizes. This is consistent with the $O(B \cdot (P + RF))$ per-buffer complexity bound derived in the Graph partitioning section, whose constant factor is smaller than the embedding step's; the dominant cost of processing a buffer is the embedding computation on the slowest (largest or most active) partition, though partitioning is not negligible enough to ignore entirely at the buffer sizes used here.
 
 
 
 ## Statistical significance of the partition-count effect
 
-The trends described above are stated in terms of mean F1 scores, but with only a few repeated runs per configuration it is worth checking whether the differences between partition counts are statistically distinguishable from run-to-run variation rather than merely eyeballed from the tables. For each dataset and partition count, the reconstruction F1 at the final iteration of every independent run is collected (between 3 and 11 runs per configuration; the per-run standard deviations are the $\pm$ values reported in the tables above), and partition counts are compared pairwise: each $P$ against the single-partition baseline, and each adjacent pair $(P, 2P)$. Each run is a full, independent re-execution of the buffered pipeline from scratch — fresh random walks, skip-gram initialization, and partitioner tie-breaking — pooled across separate machine run sets rather than repeated iterations within a single stream, so the independence assumption behind the tests below is reasonable; nonetheless, some of the effect sizes reported next are large enough that the raw percentage-point gap, not $d$ alone, should carry the practical interpretation. Three complementary statistics are reported for every pair:
+The trends described so far are stated in terms of mean F1 scores, but with only a few repeated runs per configuration it is worth checking whether the differences between partition counts are statistically distinguishable from run-to-run variation rather than merely eyeballed from the tables. For each dataset and partition count, the reconstruction F1 at the final iteration of every independent run is collected (between 3 and 11 runs per configuration; the per-run standard deviations are the $\pm$ values reported in the tables in the embedding quality, partition balance and edge cut section), and partition counts are compared pairwise: each $P$ against the single-partition baseline, and each adjacent pair $(P, 2P)$. Each run is a full, independent re-execution of the buffered pipeline from scratch — fresh random walks, skip-gram initialization, and partitioner tie-breaking — pooled across separate machine run sets rather than repeated iterations within a single stream, so the independence assumption behind these tests is reasonable; nonetheless, some of the effect sizes reported next are large enough that the raw percentage-point gap, not $d$ alone, should carry the practical interpretation. Three complementary statistics are reported for every pair:
 
 - **Welch's two-sample $t$-test** (unequal-variance), testing whether the mean final F1 differs between the two partition counts. The number of runs and the F1 variance both differ across configurations, which is why the unequal-variance form is used. This $p$-value determines the significance flag at $\alpha = 0.05$.
 - **Mann--Whitney $U$ test** (two-sided), a rank-based non-parametric check that does not assume normally distributed F1 scores. Agreement with the $t$-test indicates that the conclusion does not depend on the normality assumption; disagreement is a signal that more runs are needed.
-- **Cohen's $d$** effect size, $d = (\bar{f}_b - \bar{f}_a) / s_p$ with $s_p$ the pooled sample standard deviation (ddof $= 1$), so that $d > 0$ means the larger partition count has the higher mean F1. It is reported because, at small sample sizes, a non-significant $p$-value may reflect low statistical power rather than genuine equivalence: $|d| \lesssim 0.2$ indicates a practically negligible difference and $|d| \gtrsim 0.8$ a large one.
+- **Cohen's $d$** effect size, $d = (\bar{f}_b - \bar{f}_a) / s_p$ with $s_p$ the pooled sample standard deviation, so that $d > 0$ means the larger partition count has the higher mean F1. It is reported because, at small sample sizes, a non-significant $p$-value may reflect low statistical power rather than genuine equivalence: $|d| \lesssim 0.2$ indicates a practically negligible difference and $|d| \gtrsim 0.8$ a large one.
 
 | Dataset | Comparison | Welch $t$-test $p$ | Mann--Whitney $p$ | Cohen's $d$ | Significant ($\alpha = 0.05$) |
 |---|---|---|---|---|---|
@@ -518,7 +466,7 @@ Two caveats apply. The samples are small (as few as three runs per configuration
 
 ## Random partitioner baseline
 
-To isolate how much of the neighbor-based partitioner's embedding quality comes from preserving neighborhood locality, we repeated the buffered dynnode2vec experiment with a *random partitioner* that assigns each vertex to one of the $P$ partitions uniformly at random, ignoring its neighbors entirely. All other settings (buffer size 1000, $RF = 1$, and the dataset-specific embedding hyperparameters listed above) are unchanged. Results for CITESEER and AstroPh, averaged over 3 iterations of the buffered stream, are reported below.
+To isolate how much of the neighbor-based partitioner's embedding quality comes from preserving neighborhood locality, we repeated the buffered dynnode2vec experiment with a *random partitioner* that assigns each vertex to one of the $P$ partitions uniformly at random, ignoring its neighbors entirely. All other settings (buffer size 1000, $RF = 1$, and the dataset-specific embedding hyperparameters listed in the partitioning hyperparameters section) are unchanged. Results for CITESEER and AstroPh, averaged over 3 iterations of the buffered stream, are reported below.
 
 | P | F1 | Edge cut | Balance |
 |---|------|----------|---------|
@@ -536,55 +484,23 @@ Table: F1 reconstruction score, edge cut, and balance for AstroPh with a random 
 
 Compared with the neighbor-based partitioner, which reaches F1 scores of roughly 45–55% on CITESEER and 46–55% on AstroPh at the same partition counts, random assignment collapses reconstruction quality to essentially zero, with F1 below 0.05% in every configuration. This confirms that the neighbor partitioner's F1 scores are driven by preserving neighborhood locality across partitions rather than by the embedding algorithm alone: once locality is destroyed, the per-partition embeddings become mutually incompatible and the averaged global embedding reconstructs the graph no better than chance. Edge cut is correspondingly far higher under random assignment (50–82%) than under the neighbor partitioner (23–65%), and closely tracks the value $(P-1)/P$ expected when edge endpoints are placed independently and uniformly at random (50%, 75%, and 87.5% for $P = 2, 4, 8$ respectively). Notably, the neighbor partitioner attains competitive embedding quality while keeping edge cut well below this random baseline, indicating that it genuinely concentrates each vertex's neighborhood within its assigned partition.
 
-Two aspects of this control experiment depart from the idealized theory and are worth flagging rather than glossing over. First, edge cut at $P=8$ (81.6% CITESEER, 81.4% AstroPh) falls noticeably short of the $(P-1)/P = 87.5\%$ expected under fully independent uniform assignment of edge endpoints, suggesting some residual correlation between an edge's two endpoints' partitions even under random assignment — plausibly because a vertex's partition, once assigned, is fixed for all its future edges rather than being re-rolled per edge. Second, balance under the random partitioner (1.32/1.61 at $P=4/8$ for CITESEER, 1.31/1.60 for AstroPh) is, counter-intuitively, *worse* than under the neighbor-based partitioner at the same $P$ (e.g. 1.11/1.26 for AstroPh, main results table above), even though uniform-random assignment would naively be expected to balance partition sizes better than a neighbor-affinity heuristic. This suggests the random baseline is not equivalent to a single global uniform shuffle in practice — most plausibly because each vertex is assigned once, uniformly at random, at the buffer in which it first arrives, with no capacity-penalty correction, so early random imbalances across buffers can compound rather than average out. The random-partitioner numbers should therefore be read as a strong qualitative control (neighborhood locality is what drives embedding quality) rather than as a precise match to the uniform-random assignment theory.
+Two aspects of this control experiment depart from the idealized theory and are worth flagging rather than glossing over. First, edge cut at $P=8$ (81.6% CITESEER, 81.4% AstroPh) falls noticeably short of the $(P-1)/P = 87.5\%$ expected under fully independent uniform assignment of edge endpoints, suggesting some residual correlation between an edge's two endpoints' partitions even under random assignment — plausibly because a vertex's partition, once assigned, is fixed for all its future edges rather than being re-rolled per edge. Second, balance under the random partitioner (1.32/1.61 at $P=4/8$ for CITESEER, 1.31/1.60 for AstroPh) is, counter-intuitively, *worse* than under the neighbor-based partitioner at the same $P$ (e.g. 1.11/1.26 for AstroPh, in the main results table in the embedding quality, partition balance and edge cut section), even though uniform-random assignment would naively be expected to balance partition sizes better than a neighbor-affinity heuristic. This suggests the random baseline is not equivalent to a single global uniform shuffle in practice — most plausibly because each vertex is assigned once, uniformly at random, at the buffer in which it first arrives, with no capacity-penalty correction, so early random imbalances across buffers can compound rather than average out. The random-partitioner numbers should therefore be read as a strong qualitative control (neighborhood locality is what drives embedding quality) rather than as a precise match to the uniform-random assignment theory.
 
 ## Effect of replication factor
 
-Increasing the replication factor $RF$ allows a vertex to be embedded independently in more than one partition, with the final embedding obtained by averaging the per-partition embeddings as described in the Embedding model section. This trades additional computation and storage for a more informed, less committal partition assignment. In a smaller exploratory hyperparameter sweep on CITESEER with $P = 4$, buffer size 1000, and capacity penalty $\mu = 1$ (run separately from, and not directly comparable to, the main results table above, which used a longer run), increasing the replication factor from $RF = 1$ to $RF = 3$ raised the F1 reconstruction score from 44.35% to 69%, indicating that hedging the partition assignment across multiple partitions can substantially mitigate the quality loss introduced by early, uncertain assignment decisions. This comes at the cost of up to $RF\times$ the embedding computation per vertex, illustrating a quality/computation trade-off: assigning a vertex to a single partition is cheaper but riskier, while replicating it across several partitions is more expensive but more robust to a suboptimal initial assignment. Because this observation comes from a single, small-scale exploratory run, it should be read as preliminary evidence rather than a robust result; a systematic replication factor sweep across datasets and partition counts is left to future work.
+Increasing the replication factor $RF$ allows a vertex to be embedded independently in more than one partition, with the final embedding obtained by averaging the per-partition embeddings as described in the Embedding model section. This trades additional computation and storage for a more informed, less committal partition assignment. In a smaller exploratory hyperparameter sweep on CITESEER with $P = 4$, buffer size 1000, and capacity penalty $\mu = 1$ (run separately from, and not directly comparable to, the main results table in the embedding quality, partition balance and edge cut section, which used a longer run), increasing the replication factor from $RF = 1$ to $RF = 3$ raised the F1 reconstruction score from 44.35% to 69%, indicating that hedging the partition assignment across multiple partitions can substantially mitigate the quality loss introduced by early, uncertain assignment decisions. This comes at the cost of up to $RF\times$ the embedding computation per vertex, illustrating a quality/computation trade-off: assigning a vertex to a single partition is cheaper but riskier, while replicating it across several partitions is more expensive but more robust to a suboptimal initial assignment. Because this observation comes from a single, small-scale exploratory run, it should be read as preliminary evidence rather than a robust result; a systematic replication factor sweep across datasets and partition counts is left to future work.
 
 ## Temporal evolution
 
-Beyond aggregate scores, it is informative to track how F1 score, balance, edge cut, and repartitioning rate evolve as the event stream is ingested buffer by buffer, broken down by number of partitions, for each of the five datasets.
+Beyond aggregate scores, it is informative to track how the repartitioning rate evolves as the event stream is ingested buffer by buffer, broken down by number of partitions, for each of the five datasets.
+![CITESEER](png/citeseer-repartitions.png){width=45%}
 
-### F1 score over iterations
+![DBLP](png/dblp-repartitions.png){width=45%}
 
-| | |
-|---|---|
-| ![CITESEER](png/citeseer-f1.png){width=45%} | ![DBLP](png/dblp-f1.png){width=45%} |
-| ![AstroPh](png/astroph-f1.png){width=45%} | ![AS-Oregon](png/as-oregon-f1.png){width=45%} |
+![AstroPh](png/astroph-repartitions.png){width=45%}
 
-![Enron](png/enron-f1.png){width=45%}
+![AS-Oregon](png/as-oregon-repartitions.png){width=45%}
 
-The F1 score generally improves as more events are ingested and the graph snapshot grows, since the embedding model accumulates more structural information over time. Using more partitions tends to remain competitive with, or even improve on, the single-partition baseline on datasets with clear community structure (CITESEER, DBLP, Enron), while the denser AstroPh and AS-Oregon datasets show a modest drop at higher partition counts, consistent with the increased edge cut discussed above.
-
-### Balance over iterations
-
-| | |
-|---|---|
-| ![CITESEER](png/citeseer-balance.png){width=45%} | ![DBLP](png/dblp-balance.png){width=45%} |
-| ![AstroPh](png/astroph-balance.png){width=45%} | ![AS-Oregon](png/as-oregon-balance.png){width=45%} |
-
-![Enron](png/enron-balance.png){width=45%}
-
-Balance remains close to 1 throughout the stream for DBLP, AstroPh, AS-Oregon, and Enron, showing that the neighbor-based partitioner keeps partitions nearly evenly sized on these datasets without requiring an explicit rebalancing step, even as the graph evolves. As in the aggregate results, CITESEER is the exception, settling at a noticeably higher balance value at larger partition counts.
-
-### Edge cut over iterations
-
-| | |
-|---|---|
-| ![CITESEER](png/citeseer-edge-cuts.png){width=45%} | ![DBLP](png/dblp-edge-cuts.png){width=45%} |
-| ![AstroPh](png/astroph-edge-cuts.png){width=45%} | ![AS-Oregon](png/as-oregon-edge-cuts.png){width=45%} |
-
-![Enron](png/enron-edge-cuts.png){width=45%}
-
-The edge cut ratio rises quickly during the first few buffers, while the partitions are still forming, and then stabilizes at a plateau largely determined by the number of partitions and the graph's community structure. This holds across all five datasets, indicating that the partitioner reaches a steady state rather than degrading further as the stream continues.
-
-### Repartitioning rate over iterations
-
-| | |
-|---|---|
-| ![CITESEER](png/citeseer-repartitions.png){width=45%} | ![DBLP](png/dblp-repartitions.png){width=45%} |
-| ![AstroPh](png/astroph-repartitions.png){width=45%} | ![AS-Oregon](png/as-oregon-repartitions.png){width=45%} |
 
 ![Enron](png/enron-repartitions.png){width=45%}
 
