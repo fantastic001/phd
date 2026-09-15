@@ -1,2 +1,18 @@
 
 .DS_Store
+
+# LaTeX/xelatex build artifacts (keep only .tex and .pdf tracked)
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
