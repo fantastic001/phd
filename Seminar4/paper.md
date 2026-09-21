@@ -1,8 +1,8 @@
 ---
-title: "Partitioning Strategy, Decoder Architecture, and Classifier Choice for Link Prediction over Distributed Static Node2Vec Embeddings"
+title: "Effect of Graph Partitioning on Link Prediction with Bilinear, Hadamard, and Random Forest Decoders over Static Node2Vec Embeddings"
 author: "Stefan Nožinić"
 abstract: |
-  This paper studies how the choice of graph partitioning strategy, link-prediction decoder architecture, and classifier family affects downstream link-prediction quality when node embeddings are computed independently, per partition, with static node2vec. Unlike graph reconstruction, which asks how well embeddings recover the training graph itself, link prediction asks how well embeddings generalize to edges withheld from training, and this paper shows that the two questions can have different, sometimes opposite, answers under partitioning. Using four real-world graphs (CITESEER, AstroPh, Cit-HepPh, AS-Oregon), we compare label propagation (LPA) against the Lancichinetti-Fortunato-Kertesz method (LFM) as partitioning strategies, three link-prediction decoder architectures (a Hadamard-product logistic model, a bilinear $x^\top W y$ model, and a Mahalanobis-style $(x-y)^\top W (x-y)$ model), and two ways of turning per-partition embeddings into link-prediction features (concatenation and averaging, consumed either by a neural decoder or by a random forest classifier). We find that LPA consistently outperforms LFM for downstream link-prediction accuracy at every partition count tested, even though this paper's companion study of graph reconstruction (Seminar 3) found the opposite ranking is not what determines reconstruction quality; further, link-prediction accuracy under LPA *decreases* monotonically as the partition count grows on CITESEER even as the graph-reconstruction F1 score of the same embeddings *increases* with partition count, showing that reconstruction F1 is not a reliable proxy for downstream link-prediction performance. Neural decoders lose accuracy as the partition count increases because independently trained per-partition embeddings occupy unaligned latent spaces; a random forest classifier trained on the concatenation of per-partition embeddings is markedly more robust to this misalignment and is a strong, simple baseline across all four datasets and partition counts tested. Among the neural decoders, the bilinear $x^\top W y$ architecture gives the best mean reciprocal rank.
+  This paper studies how graph partitioning affects link prediction when node embeddings are computed independently on each partition with static node2vec and merged afterwards. Unlike graph reconstruction, which asks how well embeddings recover the graph they were trained on, link prediction asks how well they generalize to held-out edges, and the two questions turn out to have opposite answers under partitioning. Using four real-world graphs (CITESEER, AstroPh, Cit-HepPh, AS-Oregon), partition counts $P \in \{1, 2, 4, 8\}$, and 10 independent runs per configuration (480 runs), we compare three link-prediction decoders on the merged embeddings: a Hadamard-product logistic decoder, a bilinear decoder $u^\top W v$, and a random forest on concatenated embeddings. Decoders are evaluated with a ranking protocol (Hits@k and mean reciprocal rank, MRR) in which each held-out edge is ranked against 500 negative candidates, and configurations are compared with Mann--Whitney tests and Cohen's $d$. Partitioning strongly degrades the neural decoders: from $P=1$ to $P=8$ the MRR of the bilinear decoder falls by 39--60% (significantly at 11 of 12 partition-count steps) and that of the Hadamard decoder by 8--40%, mostly in the first step, whereas the MRR of the random forest changes only between +3% and -25%. Consequently the decoders are ordered random forest > bilinear > Hadamard in most configurations, with the bilinear decoder best only on unpartitioned dense graphs. In a preliminary single-dataset comparison, label propagation (LPA) partitioning gave better link prediction than the Lancichinetti-Fortunato-Kertesz method (LFM) at every partition count tested. Finally, the reconstruction F1 score of the same embeddings increases with the partition count on three of the four datasets while neural-decoder link prediction deteriorates, so reconstruction quality is not a reliable proxy for downstream link-prediction quality in a partitioned embedding pipeline.
 bibliography: ./refs.bib
 ---
 
@@ -14,19 +14,20 @@ State-of-the-art embedding methods such as node2vec [@grover_node2vec_2016] comp
 
 # Problem Formulation
 
-Given a static graph partitioned into $P$ partitions, each embedded independently with static node2vec, we want to know how the choice of
+Given a static graph partitioned into $P$ partitions, each embedded independently with static node2vec, we want to know how
 
-* partitioning strategy (LFM vs.\ LPA),
-* link-prediction decoder architecture, and
-* classifier family and embedding-combination scheme
+* the number of partitions $P$, and the partitioning strategy (LFM vs.\ LPA), and
+* the link-prediction decoder (bilinear, Hadamard, or random forest)
 
-affects link-prediction quality, and how that quality relates to the graph-reconstruction quality of the same embeddings.
+affect link-prediction quality, and how that quality relates to the graph-reconstruction quality of the same embeddings.
 
 # Related Work
 
 Graph vertex embedding is a well-studied area, with various methods proposed to generate low-dimensional representations of vertices in a graph. Node2Vec [@grover_node2vec_2016] is the state-of-the-art method used throughout this paper; it generates embeddings via biased random walks and has been shown to be effective at capturing community structure. As its improvement, DistGER [@fang_distributed_2023] is a distributed graph embedding method that extends Node2Vec by leveraging distributed computing to handle large graphs, and [@lombardo_scalable_2019] proposes an actor-model-based distributed framework for the same purpose. The common ground for these methods is that they generate walks which are later used to train a Word2Vec model [@church_word2vec_2017] commonly used for generating embeddings in natural language processing tasks.
 
-Link prediction from vertex embeddings is commonly formulated as a binary classification problem over pairs of vertices, using a decoder that maps a pair of embeddings to a link probability. The original node2vec paper [@grover_node2vec_2016] popularized the use of simple binary operators — including the Hadamard product used as the primary decoder in this paper — to combine two node embeddings into a single edge feature vector before classification. Leskovec et al. [@leskovec_predicting_2010] study link sign and formation prediction more broadly, motivating the classification-based framing of link prediction adopted here.
+Link prediction from vertex embeddings is commonly formulated as a binary classification problem over pairs of vertices, using a decoder that maps a pair of embeddings to a link probability. The original node2vec paper [@grover_node2vec_2016] popularized the use of simple binary operators — including the Hadamard product, which is one of the decoders compared in this paper — to combine two node embeddings into a single edge feature vector before classification. Leskovec et al. [@leskovec_predicting_2010] study link sign and formation prediction more broadly, motivating the classification-based framing of link prediction adopted here. Beyond the Hadamard product, a learned bilinear form over the two embeddings is a common, more expressive scoring function, and non-neural classifiers such as random forests [@breiman_random_2001] can be applied directly to the concatenated embeddings.
+
+Evaluation protocol matters as much as the decoder. Li et al. [@li_evaluating_2023] point out that link-prediction results are often not comparable because of inconsistent evaluation settings, and propose the HeaRT benchmark, which ranks every positive test edge against a set of 500 negative candidates and reports the mean reciprocal rank (MRR) and Hits@k. The ranking protocol used in this paper follows this per-positive design, but draws the candidates uniformly at random instead of selecting hard negatives with heuristics.
 
 Partitioning a graph while preserving the community structure it relies on is itself a well-studied problem. Community-detection-based partitioners are the natural choice when partitioning is intended to preserve locality for downstream embedding: the label propagation algorithm (LPA) [@raghavan_near_2007] assigns each vertex the most frequent label among its neighbors, iterating until labels stabilize into communities, while the Lancichinetti-Fortunato-Kertesz (LFM) method [@lancichinetti_detecting_2009] detects (possibly overlapping) communities by greedily optimizing a local fitness function around a seed vertex. Both methods have been used as static graph partitioners in this line of work, and this paper compares their impact on downstream link-prediction quality, complementing Seminar 3's neighbor-based buffered partitioner for online node arrivals, and the classical static partitioning literature surveyed there [@benlic_effective_2010] [@sanders_distributed_2012] [@sanders_engineering_2011] [@romero_ruiz_memetic_2018] [@catalyurek_more_2023].
 
@@ -36,9 +37,9 @@ Distributed embedding systems that partition a graph before embedding face a fun
 
 This paper makes the following contributions:
 
-* We compare LFM and LPA as static partitioning strategies for distributed link prediction, and show that LPA is consistently the better choice across the partition counts tested.
-* We compare three link-prediction decoder architectures and two classifier families (neural decoders vs.\ random forest) on embeddings produced by independently embedding each partition with static node2vec, and identify random forest on concatenated embeddings as a partition-count-robust baseline.
-* We show, using the same underlying embeddings and datasets studied for graph reconstruction, that reconstruction F1 and downstream link-prediction accuracy can move in opposite directions as the partition count grows, indicating that reconstruction quality is not a reliable proxy for link-prediction quality.
+* We measure, on four real-world graphs with 10 independent runs per configuration, how the partition count affects link prediction over independently computed static node2vec embeddings for three decoders (bilinear, Hadamard, random forest), using a per-positive ranking protocol (Hits@k, MRR) and statistical tests (Mann--Whitney, Cohen's $d$).
+* We show that the neural decoders lose a large part of their ranking quality when the graph is partitioned, whereas a random forest on concatenated embeddings is nearly insensitive to the partition count, and we derive a decoder ordering (random forest > bilinear > Hadamard) together with the conditions in which it changes.
+* We show that graph-reconstruction F1 and neural-decoder link-prediction quality move in opposite directions as the partition count grows, so reconstruction quality is not a reliable proxy for downstream link-prediction quality, and we compare LFM and LPA partitioning in a preliminary experiment.
 
 # Paper Organization
 
@@ -48,67 +49,113 @@ The rest of the paper is organized as follows: first, the system overview is pre
 
 ## System overview
 
-Unlike Seminar 3's buffered, online setting, this paper considers a fully known static graph $G = (V, E)$. The graph is partitioned once, ahead of time, into $P$ partitions $\mathcal{P} = \{p_1, \dots, p_P\}$ using a community-detection-based partitioner (LFM or LPA, described below). Each partition's induced subgraph is then embedded independently using static node2vec, producing one embedding matrix per partition. Because each partition is embedded in complete isolation from the others, the resulting per-partition embedding spaces are not trained to be mutually consistent: a large dot product between two vectors in partition $p_i$'s embedding space carries no guaranteed relationship to a large dot product in partition $p_j$'s embedding space. This is the central complication that distinguishes distributed link prediction from the single-partition case, and every design choice examined in this paper — partitioning strategy, decoder architecture, and combination scheme — is, in one way or another, a response to it.
+This paper considers a fully known static graph $G = (V, E)$. The pipeline has five stages: (1) a fraction of the edges is held out as positive test pairs, and an equal number of non-adjacent vertex pairs is drawn as negative test pairs; (2) the remaining training graph $G_{\text{train}}$ is partitioned once into $P$ partitions; (3) each partition's induced subgraph is embedded independently with static node2vec; (4) the per-partition embeddings are merged into one embedding per vertex, on which a link-prediction decoder is trained; and (5) the decoder is evaluated on the held-out pairs. Because each partition is embedded in isolation from the others, the resulting per-partition embedding spaces are not trained to be mutually consistent: a large dot product between two vectors in partition $p_i$'s embedding space carries no guaranteed relationship to a large dot product in partition $p_j$'s embedding space. This is the central complication that distinguishes distributed link prediction from the single-partition case, and every design choice examined in this paper --- partitioning strategy and decoder --- is, in one way or another, a response to it.
 
-Link-prediction candidate pairs $(u, v)$ are formed after partitioning, and may span two different partitions. For a pair whose vertices lie in the same partition, both embeddings come from the same, internally consistent embedding space. For a pair whose vertices lie in different partitions, the decoder or classifier must combine embeddings from two independently trained spaces, and it is this cross-partition case that drives most of the quality loss observed in the Results section.
+A candidate pair $(u, v)$ may span two different partitions. For a pair whose vertices lie in the same partition, both embeddings come from the same, internally consistent embedding space. For a pair whose vertices lie in different partitions, the decoder must combine embeddings from two independently trained spaces, and it is this cross-partition case that is expected to drive most of the quality loss observed in the Results section.
 
 ## Graph partitioning
 
-Two static, community-detection-based partitioning strategies are compared:
+Both partitioners are community-detection-based and follow the same two-step scheme: detect communities in $G_{\text{train}}$, then pack the communities into exactly $P$ partitions with a greedy, size-balancing bin-packing heuristic (communities sorted by size, each placed into the currently smallest partition). Vertices of $G_{\text{train}}$ therefore stay together with their community, and the partition sizes are kept approximately equal.
 
-**LPA (Label Propagation Algorithm)** [@raghavan_near_2007]: each vertex is initialized with a unique label, and, at every iteration, updates its label to the one most frequent among its neighbors (ties broken at random). The process is repeated until labels stabilize; vertices sharing a final label form one partition. LPA is near-linear in the number of edges and requires no parameter tuning beyond a maximum iteration count.
+**LPA (Label Propagation Algorithm)** [@raghavan_near_2007]: every vertex is initialized with a unique label $\ell(v) = v$. In each sweep, vertices are visited in random order and each vertex adopts the label held by the plurality of its neighbors, with ties broken uniformly at random,
 
-**LFM (Lancichinetti-Fortunato-Kertesz method)** [@lancichinetti_detecting_2009]: starting from a randomly chosen seed vertex, a community is grown greedily by repeatedly adding the neighboring vertex that most increases a local fitness function, until no further addition improves fitness. The process is repeated with new seeds until every vertex is assigned to a community. Unlike LPA, LFM can produce overlapping communities; for the partitioning use considered here, each vertex is assigned to a single partition (its highest-fitness community) to produce a disjoint partitioning comparable to LPA's output.
+$$ \ell(v) \leftarrow \arg\max_{\ell} \; \big|\{ w \in N(v) : \ell(w) = \ell \}\big| , $$
 
-Both methods partition the graph based on its community structure rather than on vertex arrival order, in contrast to the online, neighbor-count-based partitioner used in Seminar 3 for streaming vertex arrivals. Because the full graph is known in advance, both methods can consider the entire vertex neighborhood when forming partitions, which is not possible in the online setting.
+until no label changes. Vertices sharing a final label form a community. The asynchronous variant is used, in which updated labels are visible immediately within a sweep. LPA has no tunable parameters and produces communities of very different sizes, which the bin-packing step then groups into $P$ partitions. Communities are disjoint, so every vertex belongs to exactly one partition.
+
+**LFM (Lancichinetti-Fortunato-Kertesz method)** [@lancichinetti_detecting_2009]: a community $C$ is grown greedily from a randomly chosen seed vertex that is not yet covered. Community quality is measured by the fitness
+
+$$ f(C) = \frac{k_{\text{in}}(C)}{\big(k_{\text{in}}(C) + k_{\text{out}}(C)\big)^{\alpha}} $$
+
+where $k_{\text{in}}(C)$ and $k_{\text{out}}(C)$ are the total internal and external degrees of $C$ and $\alpha$ is a resolution parameter. At each step the neighboring vertex with the largest positive fitness gain is added, vertices whose removal increases fitness are dropped, and growth stops when no neighbor improves fitness. Communities produced this way may overlap. A modified variant is used here, which (i) repeats seeding until the fraction of uncovered vertices falls to a threshold $\tau$, (ii) caps the number of communities at $10 P$ to guarantee termination when growth does not converge, (iii) pads with empty communities if fewer than $P$ are found, and (iv) assigns any vertex still uncovered to a uniformly random community. Parameters are $\alpha = 1$ and $\tau = 0$ (every vertex must be covered). Because LFM communities can overlap, a vertex may end up in more than one partition after bin packing; this is handled in the embedding-merging step below.
+
+Both methods partition the graph based on its community structure rather than on vertex arrival order, in contrast to the online, neighbor-count-based partitioner used in Seminar 3. Because the full training graph is known in advance, both can consider the entire neighborhood of every vertex.
 
 ## Embedding model
 
-Given a partitioned graph, each partition's induced subgraph is embedded independently using static node2vec [@grover_node2vec_2016]. Node2vec performs biased second-order random walks controlled by return parameter $p$ and in-out parameter $q$, and trains a skip-gram model [@church_word2vec_2017] over the resulting corpus of walks to produce an embedding matrix for that partition's vertices. No information is shared between partitions during training: the skip-gram model for partition $p_i$ is initialized and optimized independently of every other partition's model, so the resulting embedding spaces are not aligned with one another beyond whatever structural similarity the underlying communities happen to share.
+Each partition's induced subgraph $G_{\text{train}}[p_i]$ is embedded independently using static node2vec [@grover_node2vec_2016]. Node2vec generates $r$ second-order random walks of length $l$ from every vertex. For a walk that has just moved from $t$ to $x$, the unnormalized probability of stepping next to a neighbor $y$ of $x$ is
 
-## Link-prediction decoders and classifiers
+$$ \pi(x, y \mid t) = \begin{cases} 1/p & \text{if } y = t, \\ 1 & \text{if } y \in N(t), \\ 1/q & \text{otherwise,} \end{cases} $$
 
-Given the embeddings $u = z(a)$ and $v = z(b)$ of two vertices $a, b$ — possibly drawn from different partitions — a decoder or classifier produces a probability, or ranking score, that $(a, b)$ is an edge of $G$. Three neural decoder architectures are compared:
+so that the return parameter $p$ and in-out parameter $q$ control how strongly the walk backtracks or moves outward. The walks are treated as sentences and used to train a skip-gram model [@church_word2vec_2017] with negative sampling, which maximizes, for every vertex $v$ and every context vertex $c$ within a window of $w$ positions,
 
-**Hadamard-product logistic decoder.** Following the edge-feature operators introduced alongside node2vec [@grover_node2vec_2016], the two embeddings are combined via elementwise (Hadamard) product and passed through a linear layer and sigmoid:
+$$ \log \sigma(z_v^\top z_c') + \sum_{k=1}^{K} \mathbb{E}_{n_k \sim P_n}\, \log \sigma(-z_v^\top z_{n_k}') $$
 
-$$ p(\text{connected} \mid u, v) = \sigma\big(w^\top (u \odot v) + b\big) $$
+where $z$ and $z'$ are the input and context vectors and $K$ negative samples are drawn per positive pair. The input vectors $z_v \in \mathbb{R}^d$ are the embeddings. The following parameters are used for all datasets: $r = 10$ walks per vertex, walk length $l = 80$, window size $w = 10$, $K = 5$ negative samples, learning rate $0.01$, and $10$ training epochs. The return parameter $p$, in-out parameter $q$, and dimension $d$ are dataset-specific and were chosen by a preliminary search over $p, q \in \{0.25, 0.5, 1, 2, 4\}$ and several embedding dimensions, scored by reconstruction F1 (Table 1). No information is shared between partitions during training: the skip-gram model of partition $p_i$ is initialized and optimized independently of every other partition's model.
 
-where $\odot$ denotes the Hadamard product, $w$ is a learned weight vector, $b$ a learned bias, and $\sigma$ the sigmoid function. This is the simplest decoder considered and serves as the baseline architecture.
+| Dataset   | p   | q    | d   |
+|-----------|-----|------|-----|
+| CITESEER  | 0.5 | 0.25 | 50  |
+| AstroPh   | 2   | 0.25 | 50  |
+| Cit-HepPh | 4   | 0.25 | 100 |
+| AS-Oregon | 0.5 | 2    | 128 |
+Table: Node2vec return parameter $p$, in-out parameter $q$, and embedding dimension $d$ for each dataset.
 
-**Bilinear decoder ($x^\top W y$).** A learned matrix $W$ captures pairwise interactions between the coordinates of the two embeddings directly:
+Since a vertex can belong to several partitions (only under LFM), the final embedding of vertex $u$ is the mean of its per-partition embeddings, as in Seminar 3:
 
-$$ p(\text{connected} \mid u, v) = \sigma\big(u^\top W v\big) $$
+$$ z_u = \frac{1}{|\mathcal{R}_u|} \sum_{p \in \mathcal{R}_u} z_u^{(p)} , $$
 
-A symmetric-$W$ variant is also considered, in which $W$ is constrained to be symmetric by parameterizing only its upper triangle and mirroring it; this halves the number of free parameters relative to an unconstrained $W$.
+where $\mathcal{R}_u$ is the set of partitions containing $u$. Under LPA, $|\mathcal{R}_u| = 1$ and $z_u$ is simply the embedding from the single partition containing $u$. All decoders below operate on these merged embeddings, so the decoder itself is trained once, on vertices from all partitions, rather than once per partition.
 
-**Mahalanobis-style decoder ($(x-y)^\top W (x-y)$).** Rather than the product of the two embeddings, the decoder operates on their difference:
+## Link-prediction data and decoders
 
-$$ p(\text{connected} \mid u, v) = \sigma\big((u - v)^\top W (u - v)\big) $$
+**Held-out edges.** A uniformly random $10\%$ of the edges of $G$ is removed and kept as the positive test set $E^{+}_{\text{test}}$; the rest form $G_{\text{train}}$, on which partitioning and embedding are performed. The negative test set $E^{-}_{\text{test}}$ contains $|E^{+}_{\text{test}}|$ vertex pairs $(u, v)$, $u \neq v$, drawn uniformly at random from $V \times V$ subject to $(u, v) \notin E$, so the test set is balanced.
 
-All three decoders are trained with binary cross-entropy loss against labeled positive (true edge) and negative (non-edge) pairs.
+**Decoder training data.** Positive training pairs are edges of $G_{\text{train}}$ and negative training pairs are uniformly random vertex pairs that are not edges of $G_{\text{train}}$, with as many negatives as positives. The training edges are randomly split $80\%/20\%$ into training and validation sets. This procedure is repeated $10$ times with independent random splits and negatives, and the decoder with the lowest final validation loss is kept.
 
-In addition to these neural decoders, a random forest classifier is trained directly on hand-combined embedding features, using one of five preprocessing schemes to turn a pair $(u, v)$ into a single feature vector: **Concatenate** ($[u; v]$), **Average** ($(u+v)/2$), **Hadamard** ($u \odot v$), **L1** ($|u - v|$), and **L2** ($(u-v)^2$). Logistic regression and a support vector classifier (SVC) are evaluated over the same five preprocessing schemes as additional, simpler baselines.
+Given the merged embeddings $u = z(a)$ and $v = z(b)$ of two vertices $a, b$, three decoders producing a link score are compared.
+
+**Hadamard decoder.** The embeddings are combined with the elementwise (Hadamard) product [@grover_node2vec_2016] and passed through a learned linear layer without bias:
+
+$$ s(u, v) = w^\top (u \odot v) = \sum_{i=1}^{d} w_i u_i v_i , $$
+
+with learned weights $w \in \mathbb{R}^d$. This is the simplest decoder considered and is equivalent to logistic regression on the Hadamard feature vector.
+
+**Bilinear decoder.** A learned matrix $W \in \mathbb{R}^{d \times d}$ captures interactions between all pairs of coordinates of the two embeddings:
+
+$$ s(u, v) = u^\top W v , $$
+
+without bias and without any symmetry constraint on $W$; the Hadamard decoder is the special case in which $W$ is restricted to be diagonal.
+
+For both neural decoders the link probability is $\hat{y} = \sigma(s(u, v))$ and the parameters are trained by minimizing the binary cross-entropy
+
+$$ \mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \Big[ y_i \log \hat{y}_i + (1 - y_i) \log (1 - \hat{y}_i) \Big] $$
+
+with minibatch stochastic gradient descent (no momentum), batch size $32$, learning rate $0.1$, and $10$ epochs.
+
+**Random forest (RDF).** Instead of a hand-designed interaction between the two embeddings, a random forest [@breiman_random_2001] is trained on the concatenated feature vector $[u; v] \in \mathbb{R}^{2d}$. The forest consists of $20$ decision trees, each grown on a bootstrap sample of the training pairs and choosing every split from a random subset of the features, with a fixed random seed; the predicted link probability is the mean of the trees' class-probability estimates. Because it builds axis-aligned splits directly on the raw coordinates, the random forest does not assume that the two embeddings live in a common, smoothly varying latent geometry.
+
+For all three decoders a pair is predicted to be an edge if $\hat{y} > 0.5$.
 
 ## Benchmarks and evaluation metrics
 
-Link prediction is evaluated using the standard held-out-edge protocol: 20% of the graph's edges are removed uniformly at random and held out as positive test pairs; the embeddings are computed on the remaining 80% of the graph, partitioned and embedded as described above; and an equal number of non-edges are sampled as negative test pairs. The decoder or classifier is trained on the training-graph's edges (and an equal number of sampled non-edges) and evaluated on the held-out test pairs using the following metrics:
+The decoders are evaluated on the held-out pairs with two complementary protocols, alongside the reconstruction score used in Seminar 3.
 
-**Accuracy and F1**: standard binary classification accuracy and F1 score of the edge/non-edge prediction, computed at a fixed decision threshold (0.5 for the sigmoid-based decoders).
+**Classification metrics**: on the balanced test set $E^{+}_{\text{test}} \cup E^{-}_{\text{test}}$, precision, recall, F1 score, and accuracy of the edge/non-edge decision at threshold $0.5$ are computed. Accuracy is used in the preliminary comparison of partitioning strategies.
 
-**Hits@k**: for each held-out positive pair $(a, b)$, the true endpoint $b$ is ranked against a set of candidate negative endpoints by decoder score; Hits@k is the fraction of held-out positive pairs for which $b$ ranks among the top $k$ candidates. This paper reports Hits@5 and Hits@10.
+**Ranking metrics**: following the per-positive ranking design of the HeaRT benchmark [@li_evaluating_2023], but with uniformly random rather than heuristically selected negatives, for each of up to $1000$ randomly sampled positive test edges $(a, b)$, $500$ negative candidates $(a, c)$ are generated by drawing $c$ uniformly at random from $V$ such that $(a, c)$ is not an edge of $G_{\text{train}}$. The true edge and its candidates are scored by the decoder, and the rank of the true edge is
 
-**Mean Reciprocal Rank (MRR)**: the mean, over held-out positive pairs, of the reciprocal of the rank of the true endpoint $b$ among the same candidate set used for Hits@k:
+$$ \text{rank}(a, b) = 1 + \big|\{ c : \hat{y}(a, c) > \hat{y}(a, b) \}\big| , $$
 
-$$ \text{MRR} = \frac{1}{|E_{\text{test}}|} \sum_{(a,b) \in E_{\text{test}}} \frac{1}{\text{rank}(b \mid a)} $$
+so that ties are resolved in favor of the true edge. Over the sampled set $S$ of positive edges, the following are reported: **Hits@k**, the fraction of positive edges ranked within the top $k$, for $k \in \{1, 3, 10\}$; and the **Mean Reciprocal Rank**,
 
-**RESTORE F1 (graph reconstruction)**: as in Seminar 3 [@yip_restore_2023], the reconstruction F1 score measures how well the same embeddings, used to reconstruct the *training* graph rather than to predict held-out edges, recover the training graph's edge set. This paper reports RESTORE F1 alongside the link-prediction metrics above specifically to contrast reconstruction quality against generalization quality on the same set of embeddings.
+$$ \text{MRR} = \frac{1}{|S|} \sum_{(a,b) \in S} \frac{1}{\text{rank}(a, b)} ; $$
+
+Unlike the balanced classification metrics, the ranking metrics ask whether the true neighbor scores above hundreds of alternatives for the same source vertex, which is a considerably harder and more discriminative task.
+
+**RESTORE F1 (graph reconstruction)**: as in Seminar 3 [@yip_restore_2023], the graph is reconstructed from the merged embeddings by connecting the $m = |E_{\text{train}}|$ closest vertex pairs in the embedding space, and the F1 score of the neighborhood-level precision and recall with respect to $G_{\text{train}}$ is computed, using the definitions given in Seminar 3. It is evaluated on the training graph, not on the held-out edges, and is reported alongside the link-prediction metrics specifically to contrast reconstruction quality against generalization quality on the same set of embeddings.
 
 # Results and discussion
 
+## Experimental setup
+
+The main experiment covers four datasets (CITESEER, AstroPh, Cit-HepPh, AS-Oregon), four partition counts $P \in \{1, 2, 4, 8\}$, and the three decoders (bilinear, Hadamard, random forest), with $10$ independent runs per configuration, i.e.\ $4 \times 4 \times 3 \times 10 = 480$ runs. All runs use LPA partitioning and the dataset-specific node2vec parameters of Table 1. A run repeats the whole pipeline from scratch: a new random hold-out split, a new partitioning, new random walks and skip-gram training, and new decoder training, so the $10$ runs of a configuration are independent samples. Tables report the mean $\pm$ standard deviation over these $10$ runs. Configurations are compared with the two-sided Mann--Whitney $U$ test together with Cohen's $d$ (computed with the pooled standard deviation), at $\alpha = 0.05$ and without correction for multiple comparisons; with $n = 10$ per group, a large $|d|$ accompanies most significant differences, and the effect size rather than the $p$-value should carry the practical interpretation.
+
+The RESTORE F1 score of a run is computed from the merged embeddings before any decoder is trained, so it does not depend on the decoder. This serves as a sanity check of the pipeline: when the F1 scores of two decoder sweeps are compared, only $2$ of $16$ (dataset, $P$) groups differ significantly for the bilinear-vs-Hadamard comparison, and $1$--$2$ of $16$ for the comparisons with the random forest, with no consistent sign, which is the run-to-run noise expected from independent partitionings.
+
 ## Datasets
 
-Experiments are performed on four real-world graph datasets. CITESEER, AstroPh, and AS-Oregon are the same datasets studied in Seminar 3, whose dataset statistics are reproduced below for reference; Cit-HepPh is an additional SNAP citation network of high-energy physics phenomenology papers, for which the vertex_voyage project notes report link-prediction results but not the full set of structural statistics computed for the other three datasets, so it is described qualitatively only.
+CITESEER, AstroPh, and AS-Oregon are the same datasets studied in Seminar 3, whose structural statistics are reproduced below; Cit-HepPh is an additional SNAP citation network of high-energy physics phenomenology papers whose structural statistics are not reproduced here.
 
 | Dataset | Nodes | Edges | Average degree | Average clustering coefficient | Density | Modularity |
 | --- | --- | --- |--- | --- | --- | --- |
@@ -117,13 +164,11 @@ Experiments are performed on four real-world graph datasets. CITESEER, AstroPh, 
 | AS-Oregon | 11806 | 38781 | 6.57 | 0.399 | 0.00056 | 0.57 |
 Table: Structural statistics for CITESEER, AstroPh, and AS-Oregon, reproduced from Seminar 3.
 
-CITESEER is a citation network of scientific publications. AstroPh is a collaboration network of co-authors of astrophysics papers, and AS-Oregon is a network of autonomous systems and their peering connections; both are derived from SNAP. Cit-HepPh is a SNAP citation network among high-energy physics phenomenology papers. All four datasets are treated as static, undirected graphs for the experiments in this paper, in contrast to Seminar 3's treatment of the same graphs as event streams.
+CITESEER is a citation network of scientific publications. AstroPh is a collaboration network of co-authors of astrophysics papers, and AS-Oregon is a network of autonomous systems and their peering connections; both are derived from SNAP. All four datasets are treated as static, undirected graphs, in contrast to Seminar 3's treatment of the same graphs as event streams.
 
-<!-- SUGGESTION: DBLP and Enron are conspicuously absent here despite being two of Seminar3's five datasets. If link-prediction runs can be produced for them (even a single decoder/partition-count sweep), adding them would let the paper's central claim (F1-vs-accuracy divergence) be checked against datasets already characterized structurally in Seminar3, rather than resting on CITESEER alone. Cit-HepTh also appears later (Table 6) but is missing from this dataset list and from Table 3/4 — worth deciding whether it's in scope or should be dropped from Table 6 for consistency. -->
+## Impact of partitioning strategy
 
-## Impact of partitioning strategy on link-prediction performance
-
-Table 2 compares the LFM and LPA partitioning strategies on CITESEER, using the Hadamard-product logistic decoder, across a wide range of partition counts, alongside the RESTORE F1 score of the same embeddings and the single-partition baseline.
+Table 3 compares LFM and LPA on CITESEER across partition counts, together with the single-partition baseline. This is a preliminary, single-dataset experiment run with an earlier version of the evaluation protocol, so its absolute numbers are not comparable to the main experiment below; it is reported because it motivates the use of LPA throughout. "LP accuracy" is the accuracy of the edge/non-edge decision at threshold $0.5$ on the held-out pairs.
 
 | Strategy | Partitions | LP Accuracy | RESTORE F1 |
 |----------|------------|-------------|------------------|
@@ -139,133 +184,174 @@ Table 2 compares the LFM and LPA partitioning strategies on CITESEER, using the 
 | LPA | 64 | 0.6681 ± 0.0114 | 0.6922 ± 0.0047 |
 | LPA | 128 | 0.6888 ± 0.0180 | 0.6569 ± 0.0141 |
 | LPA | 256 | 0.6791 ± 0.0157 | 0.6293 ± 0.0199 |
-Table: CITESEER link-prediction accuracy and RESTORE F1 for LFM and LPA partitioning strategies across partition counts.
+Table: CITESEER link-prediction accuracy and RESTORE F1 for LFM and LPA partitioning across partition counts (preliminary experiment).
 
-At every partition count where both strategies are measured (2, 4, 8), LPA gives substantially higher link-prediction accuracy than LFM — for example, 0.8026 vs.\ 0.6884 at $P=2$, and 0.7128 vs.\ 0.5401 at $P=8$ — and higher RESTORE F1 as well. This is consistent with LPA producing partitions that better preserve the local neighborhood structure that both reconstruction and link prediction rely on. On this basis, all remaining experiments in this paper use LPA as the partitioning strategy.
+At every partition count where both strategies were measured (2, 4, 8), LPA gives substantially higher link-prediction accuracy than LFM (0.8026 vs.\ 0.6884 at $P=2$, 0.7128 vs.\ 0.5401 at $P=8$) and also higher RESTORE F1. A plausible reason is that LPA yields disjoint communities that are only grouped, never split, by the bin-packing step, whereas LFM's overlapping communities and randomly assigned uncovered vertices give partitions that cut more of the local neighborhood structure. Since this evidence comes from one dataset, the preference for LPA is a working choice rather than an established general result, and all remaining experiments use LPA.
 
-The same table also reveals the central empirical finding of this paper: as the partition count increases under LPA, **link-prediction accuracy decreases monotonically** from 0.9209 at $P=1$ to 0.6681 at $P=64$ (with a slight, likely noise-level, uptick at $P=128$), while **RESTORE F1 increases** over most of the same range, from 0.3782 at $P=1$ to a peak of 0.7017 at $P=32$, before declining slightly at the largest partition counts. The two metrics are computed from the same embeddings and move in opposite directions over most of the partition-count range: the embeddings become progressively better at reconstructing the training graph's own edges as $P$ grows, while becoming progressively worse at predicting held-out edges. This indicates that RESTORE F1, while a reasonable measure of how much of the training graph's structure is captured within each partition's local embedding space, is not a reliable proxy for the embeddings' ability to generalize to unseen edges, particularly ones that may cross partition boundaries.
+Table 3 also shows, for LPA, that accuracy falls from 0.9209 at $P=1$ to 0.6681 at $P=64$ while RESTORE F1 rises from 0.3782 to a peak of 0.7017 at $P=32$; the same divergence is examined systematically in the main experiment below.
 
-<!-- SUGGESTION: This is the paper's headline claim, and it currently rests on one dataset (CITESEER) with no significance testing on the accuracy side (the ± values shown are per-config std, but no pairwise test like Seminar3's Welch/Mann-Whitney/Cohen's d section has been run to confirm the accuracy decline and F1 rise are each individually significant, let alone that the *divergence* between them is). Given Seminar3 devoted a full section to exactly this kind of test, reviewers will likely expect the same treatment here before accepting "opposite directions" as more than an eyeballed trend. LFM vs LPA is also only compared on CITESEER — repeating even one other dataset would show whether the divergence is CITESEER-specific or general. -->
+## Effect of the partition count on link prediction
 
-## Effect of partition count on link-prediction quality across datasets
+Tables 4--7 report the ranking metrics of the three decoders for every dataset and partition count. Hits@$k$ is the fraction of held-out positive edges ranked within the top $k$ among $500$ negative candidates, and MRR is the mean reciprocal rank (Methods).
 
-Table 3 reports link-prediction accuracy, Hits@5, Hits@10, MRR, and RESTORE F1 for CITESEER, AstroPh, Cit-HepPh, and AS-Oregon under LPA partitioning, using the Hadamard-product logistic decoder, for $P \in \{1, 2, 4, 8\}$.
+| Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
+|------------------|-------------|----------------|----------------|----------------|----------------|
+| CITESEER | Bilinear | 27.61±1.82 | 17.90±1.80 | 13.80±0.71 | 10.94±1.17 |
+| CITESEER | Hadamard | 22.92±2.80 | 13.88±1.88 | 12.49±1.37 | 13.87±1.66 |
+| CITESEER | RDF | 31.06±2.12 | 28.00±4.07 | 24.24±4.47 | 23.37±3.73 |
+| AstroPh | Bilinear | 68.74±1.32 | 51.03±1.55 | 45.19±2.19 | 39.64±2.28 |
+| AstroPh | Hadamard | 32.34±4.13 | 26.84±3.22 | 28.24±1.63 | 29.63±2.50 |
+| AstroPh | RDF | 65.93±1.48 | 60.33±5.81 | 64.27±1.86 | 64.69±5.55 |
+| Cit-HepPh | Bilinear | 62.95±1.13 | 44.85±3.05 | 39.60±2.81 | 36.91±2.02 |
+| Cit-HepPh | Hadamard | 37.05±2.79 | 28.38±1.22 | 27.15±1.43 | 32.15±1.98 |
+| Cit-HepPh | RDF | 52.49±5.50 | 48.00±3.34 | 50.12±2.97 | 46.33±5.41 |
+| AS-Oregon | Bilinear | 25.08±0.95 | 18.69±1.05 | 15.96±1.51 | 15.34±1.63 |
+| AS-Oregon | Hadamard | 14.49±1.68 | 10.48±0.78 | 9.12±1.08 | 9.97±0.86 |
+| AS-Oregon | RDF | 44.88±5.13 | 43.97±6.14 | 44.92±4.17 | 46.07±3.09 |
+Table: Mean reciprocal rank (MRR), in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
-| Dataset | P | Accuracy | Hits@5 | Hits@10 | MRR | RESTORE F1 |
-|---|---|---|---|---|---|---|
-| CITESEER | 1 | 0.7649 | 0.4040 | 0.4768 | 0.2899 | 0.3772 |
-| CITESEER | 2 | 0.7020 | 0.2737 | 0.3135 | 0.1848 | 0.4516 |
-| CITESEER | 4 | 0.6468 | 0.1876 | 0.2318 | 0.1487 | 0.4816 |
-| CITESEER | 8 | 0.6137 | 0.1589 | 0.1921 | 0.1043 | 0.5401 |
-| AstroPh | 1 | 0.9597 | 0.8460 | 0.9130 | 0.6913 | 0.7041 |
-| AstroPh | 2 | 0.9188 | 0.7080 | 0.7850 | 0.5390 | 0.6693 |
-| AstroPh | 4 | 0.8919 | 0.5950 | 0.7010 | 0.4396 | 0.5157 |
-| AstroPh | 8 | 0.8601 | 0.5280 | 0.6310 | 0.3782 | 0.6624 |
-| Cit-HepPh | 1 | 0.9550 | 0.8180 | 0.9020 | 0.6272 | -- |
-| Cit-HepPh | 2 | 0.9119 | 0.5820 | 0.7070 | 0.4363 | -- |
-| Cit-HepPh | 4 | 0.8753 | 0.5040 | 0.6360 | 0.3754 | -- |
-| Cit-HepPh | 8 | 0.8519 | 0.5350 | 0.6320 | 0.3909 | -- |
-| AS-Oregon | 1 | 0.7726 | 0.3580 | 0.4620 | 0.2568 | 0.3437 |
-| AS-Oregon | 2 | 0.7642 | 0.2820 | 0.3860 | 0.1808 | 0.3782 |
-| AS-Oregon | 4 | 0.7468 | 0.2210 | 0.3130 | 0.1500 | 0.3916 |
-| AS-Oregon | 8 | 0.7348 | 0.2280 | 0.3020 | 0.1550 | 0.2935 |
-Table: Link-prediction accuracy, Hits@5, Hits@10, MRR, and RESTORE F1 across partition counts, four datasets, LPA partitioning, Hadamard-product logistic decoder.
+| Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
+|------------------|-------------|----------------|----------------|----------------|----------------|
+| CITESEER | Bilinear | 17.70±1.14 | 11.08±1.79 | 8.08±0.99 | 5.76±1.10 |
+| CITESEER | Hadamard | 14.37±2.65 | 8.21±1.77 | 7.64±1.59 | 9.38±1.50 |
+| CITESEER | RDF | 21.88±1.91 | 21.40±3.72 | 19.00±4.50 | 17.90±3.28 |
+| AstroPh | Bilinear | 56.79±1.58 | 38.54±1.70 | 32.57±2.29 | 27.68±2.34 |
+| AstroPh | Hadamard | 20.73±3.46 | 16.93±2.98 | 18.53±1.79 | 19.56±2.49 |
+| AstroPh | RDF | 56.82±2.09 | 52.40±6.92 | 56.90±3.45 | 56.60±6.06 |
+| Cit-HepPh | Bilinear | 48.38±1.47 | 31.05±2.81 | 27.10±2.54 | 24.90±1.91 |
+| Cit-HepPh | Hadamard | 22.45±2.49 | 17.08±1.24 | 16.08±1.42 | 19.93±1.69 |
+| Cit-HepPh | RDF | 38.80±7.07 | 36.10±4.23 | 37.90±3.63 | 34.40±6.82 |
+| AS-Oregon | Bilinear | 14.99±1.07 | 9.70±1.23 | 7.83±1.13 | 7.57±1.40 |
+| AS-Oregon | Hadamard | 6.99±1.44 | 4.92±0.73 | 4.08±0.88 | 4.49±0.91 |
+| AS-Oregon | RDF | 39.70±4.85 | 39.10±6.26 | 40.40±4.43 | 42.00±3.02 |
+Table: Hits@1, in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
-Accuracy, Hits@5, Hits@10, and MRR all decrease monotonically with $P$ on every one of the four datasets, including AstroPh and Cit-HepPh, which are considerably denser than CITESEER and AS-Oregon. This is a materially different picture from Seminar 3's reconstruction-F1 results, where partitioning was found to be stable or even beneficial on several datasets (CITESEER, DBLP, Enron); here, under the link-prediction metrics, every dataset degrades with partition count, and the RESTORE F1 column shows no consistent relationship to that degradation — it rises with $P$ on CITESEER, is non-monotonic on AstroPh and AS-Oregon, and is not measured on Cit-HepPh in these notes. The drop is steepest between $P=1$ and $P=2$ for Hits@5 and Hits@10 on every dataset (e.g.\ AstroPh Hits@10 falls from 0.9130 to 0.7850, and Cit-HepPh from 0.9020 to 0.7070), consistent with the introduction of *any* cross-partition candidate pairs being the dominant source of quality loss, rather than the degree of fragmentation increasing gradually with further splits.
+| Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
+|------------------|-------------|----------------|----------------|----------------|----------------|
+| CITESEER | Bilinear | 32.25±2.93 | 19.69±1.80 | 15.54±1.02 | 12.01±1.69 |
+| CITESEER | Hadamard | 25.94±3.57 | 15.56±2.43 | 13.75±1.36 | 15.67±1.49 |
+| CITESEER | RDF | 35.85±2.98 | 30.60±4.45 | 25.80±5.09 | 24.40±4.48 |
+| AstroPh | Bilinear | 77.48±1.50 | 58.30±2.02 | 51.70±2.66 | 44.71±3.24 |
+| AstroPh | Hadamard | 36.65±4.97 | 29.82±3.68 | 30.90±1.76 | 32.72±2.94 |
+| AstroPh | RDF | 71.10±1.44 | 63.50±5.78 | 68.30±2.31 | 68.60±6.47 |
+| Cit-HepPh | Bilinear | 73.21±1.82 | 51.77±4.09 | 45.33±4.16 | 42.48±2.77 |
+| Cit-HepPh | Hadamard | 43.07±3.61 | 32.01±1.33 | 30.70±1.90 | 37.74±2.51 |
+| Cit-HepPh | RDF | 60.30±4.97 | 52.10±3.96 | 56.70±3.89 | 51.60±4.50 |
+| AS-Oregon | Bilinear | 29.22±1.24 | 21.21±1.34 | 17.64±1.63 | 16.60±2.03 |
+| AS-Oregon | Hadamard | 15.45±2.20 | 10.43±1.09 | 9.12±1.22 | 10.19±1.17 |
+| AS-Oregon | RDF | 45.90±5.47 | 44.20±6.18 | 46.20±4.29 | 46.50±3.37 |
+Table: Hits@3, in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
-<!-- SUGGESTION: Table 3 reports no error bars / run counts, unlike Table 2, so it's unclear whether these are single runs or averages — worth clarifying and, ideally, repeating a few configs to get variance estimates. Also, the Methods section's held-out-edge protocol never specifies how the negative candidate set for Hits@k/MRR is constructed (how many candidates, sampled how — uniformly at random, degree-matched, restricted to non-neighbors?). This materially affects the absolute Hits@k/MRR numbers and should be pinned down for reproducibility, even if the qualitative "monotonic decline with P" conclusion is robust to it. -->
+| Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
+|------------------|-------------|----------------|----------------|----------------|----------------|
+| CITESEER | Bilinear | 47.37±3.50 | 30.71±2.55 | 24.50±1.34 | 20.73±1.73 |
+| CITESEER | Hadamard | 38.96±3.50 | 24.46±2.45 | 21.52±1.72 | 21.39±2.55 |
+| CITESEER | RDF | 47.31±2.42 | 39.70±5.91 | 33.80±4.57 | 33.90±6.59 |
+| AstroPh | Bilinear | 89.91±0.78 | 74.46±1.37 | 69.70±1.91 | 63.97±2.55 |
+| AstroPh | Hadamard | 55.58±5.68 | 46.86±4.04 | 47.57±2.19 | 49.85±2.50 |
+| AstroPh | RDF | 82.48±1.81 | 76.00±4.90 | 77.50±1.90 | 80.70±4.55 |
+| Cit-HepPh | Bilinear | 89.85±0.56 | 72.40±3.12 | 64.52±2.83 | 60.36±2.20 |
+| Cit-HepPh | Hadamard | 67.77±3.84 | 52.46±1.58 | 50.80±1.67 | 57.23±2.52 |
+| Cit-HepPh | RDF | 80.00±5.16 | 73.50±2.99 | 74.70±4.79 | 71.40±3.66 |
+| AS-Oregon | Bilinear | 45.39±1.44 | 36.97±1.19 | 32.74±3.00 | 31.59±2.28 |
+| AS-Oregon | Hadamard | 29.62±2.72 | 21.46±1.93 | 18.50±2.07 | 20.43±1.33 |
+| AS-Oregon | RDF | 54.90±6.45 | 54.00±6.88 | 53.10±4.82 | 54.30±5.01 |
+Table: Hits@10, in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
-## Decoder architecture comparison
+The three decoders respond to partitioning very differently, and the pattern is the same for all four ranking metrics.
 
-Table 4 compares the bilinear $x^\top W y$ decoder, its symmetric-$W$ variant, and the $(x-y)^\top W(x-y)$ decoder on CITESEER (and, where available, AstroPh) across partition counts.
+**Bilinear.** Every metric decreases monotonically with $P$ on every dataset, and the largest single drop is always between $P=1$ and $P=2$: for example, AstroPh MRR falls from 68.74% to 51.03% and Hits@1 from 56.79% to 38.54%, and Cit-HepPh MRR from 62.95% to 44.85%. The decline continues, more slowly, up to $P=8$.
 
-| Architecture | Dataset | P | LP Accuracy | Train Loss | Val Loss |
-|--------------|---------|---|-------------|------------|----------|
-| $x^\top W y$ | CITESEER | 1 | 0.9382 ± 0.0079 | 0.10 | 0.19 |
-| $x^\top W y$ | CITESEER | 2 | 0.8582 ± 0.0162 | 0.13 | 0.42 |
-| $x^\top W y$ | CITESEER | 4 | 0.8183 ± 0.0140 | 0.158 | 0.606 |
-| $x^\top W y$ | CITESEER | 8 | 0.8223 ± 0.0087 | 0.15 | 0.66 |
-| $x^\top W y$ | CITESEER | 16 | 0.7822 ± 0.0181 | 0.19 | 0.79 |
-| $x^\top W y$ | AstroPh | 1 | 0.9889 | -- | -- |
-| $x^\top W y$ | AstroPh | 2 | 0.9460 | -- | -- |
-| $x^\top W y$ | AstroPh | 4 | 0.8988 | -- | -- |
-| $x^\top W y$ | AstroPh | 8 | 0.8898 | -- | -- |
-| $x^\top W y$ | AstroPh | 16 | 0.8583 | -- | -- |
-| $x^\top W y$ (symmetric $W$) | CITESEER | 1 | 0.9196 ± 0.0148 | 0.185 | 0.358 |
-| $x^\top W y$ (symmetric $W$) | CITESEER | 2 | 0.8493 ± 0.0133 | 0.253 | 0.581 |
-| $(x-y)^\top W(x-y)$ | CITESEER | 1 | 0.8244 ± 0.0145 | 0.29 | 0.45 |
-| $(x-y)^\top W(x-y)$ | CITESEER | 2 | 0.6635 ± 0.0194 | 0.37 | 0.68 |
-Table: Link-prediction accuracy and training/validation loss for the bilinear decoder (unconstrained and symmetric-$W$) and the Mahalanobis-style decoder, LPA partitioning.
+**Hadamard.** The drop from $P=1$ to $P=2$ is also clear on all datasets, but for larger $P$ the curve flattens and on several datasets partially recovers: for example, Cit-HepPh MRR is 28.38% at $P=2$, 27.15% at $P=4$, and 32.15% at $P=8$, and CITESEER MRR is 12.49% at $P=4$ and 13.87% at $P=8$. The Hadamard decoder is also much weaker than the bilinear one even without partitioning (AstroPh MRR at $P=1$: 32.34% vs.\ 68.74%), so part of its apparent robustness to partitioning is simply that it has less quality to lose.
 
-All architectures degrade with $P$, and validation loss climbs faster than training loss in every case (e.g.\ $x^\top W y$ on CITESEER: training loss rises from 0.10 to 0.19 between $P=1$ and $P=16$, while validation loss rises from 0.19 to 0.79), which is the signature of the model overfitting to whichever partition-specific quirks are present in the training pairs rather than learning a decoder that generalizes across the misaligned per-partition embedding spaces. Comparing architectures directly, the $(x-y)^\top W(x-y)$ decoder is clearly weaker than the bilinear decoder at both $P=1$ (0.8244 vs.\ 0.9382) and $P=2$ (0.6635 vs.\ 0.8582) — using the *difference* between two embeddings as the decoding signal discards the magnitude and direction information that the bilinear form retains, and this cost is larger, not smaller, once cross-partition pairs are introduced. Constraining $W$ to be symmetric costs a small but consistent amount of accuracy relative to the unconstrained bilinear decoder, at both $P=1$ (0.9196 vs.\ 0.9382) and $P=2$ (0.8493 vs.\ 0.8582), suggesting that the extra degrees of freedom of an unconstrained $W$ are put to some, if modest, use on this task.
+**Random forest.** The metrics are nearly flat in $P$. AS-Oregon MRR is 44.88% at $P=1$ and 46.07% at $P=8$, AstroPh drops only from 65.93% to 64.69%, and the largest decline, on CITESEER, is from 31.06% to 23.37%. The standard deviations of the random forest are larger than those of the neural decoders (see the limitations below).
 
-A separate, smaller-scale run of the simplest decoder — the Hadamard-product logistic model used as the default architecture in Tables 2 and 3 above — on CITESEER without LPA partitioning gives a consistent picture using raw confusion-matrix counts: F1 falls from 0.9355 (accuracy 0.9338) at $P=1$, to 0.6104 (accuracy 0.5364) at $P=2$, to 0.5493 (accuracy 0.5000) at $P=4$. This run uses a different partitioner and a single trial per configuration, so it is not directly comparable in absolute terms to Table 4, but it shows the same qualitative pattern: decoder quality collapses fastest between one and two partitions, and continues to erode as $P$ grows further. Among all decoders considered in this paper, the bilinear $x^\top W y$ decoder gives the best mean reciprocal rank in the ranking-based evaluation of the previous section, indicating that it preserves a more useful relative ordering among ranked candidates even where its top-1 accuracy is comparable to the simpler Hadamard decoder.
-
-<!-- SUGGESTION: The paper is explicit (appropriately so) that Table 4's rows and the Hadamard confusion-matrix numbers come from different runs/protocols and aren't directly comparable in absolute terms. That honesty is good, but it also means the paper never actually runs all three decoders under one matched protocol — which would be needed to make a clean "$x^\top W y$ is best" claim rather than a qualitative one. Also missing: AstroPh results for the symmetric-$W$ and Mahalanobis variants (only CITESEER is covered for those two), and no significance testing on any decoder comparison. -->
-
-## Random forest and simple classifier baselines
-
-Rather than training a neural decoder, a classifier can be trained directly on hand-combined embedding features. Table 5 reports accuracy and F1 for CITESEER at $P=1$, comparing three classifier families (random forest, SVC, logistic regression) across five embedding-combination preprocessors (Concatenate, Average, Hadamard, L1, L2).
-
-| Model | Preprocessor | Accuracy | F1 |
+| Dataset | Bilinear | Hadamard | RDF |
 |---|---|---|---|
-| Random Forest | Concatenate | 0.7870 | 0.7409 |
-| Random Forest | Average | 0.7826 | 0.7432 |
-| SVC | Concatenate | 0.7781 | 0.7287 |
-| SVC | Average | 0.7748 | 0.7265 |
-| Logistic Regression | Hadamard | 0.7693 | 0.7149 |
-| SVC | Hadamard | 0.7671 | 0.7114 |
-| SVC | L1 | 0.7660 | 0.7014 |
-| SVC | L2 | 0.7638 | 0.6994 |
-| Logistic Regression | L2 | 0.7539 | 0.6810 |
-| Logistic Regression | L1 | 0.7494 | 0.6724 |
-| Random Forest | Hadamard | 0.7373 | 0.6510 |
-| Random Forest | L1 | 0.7208 | 0.6184 |
-| Random Forest | L2 | 0.7208 | 0.6184 |
-| Logistic Regression | Average | 0.5673 | 0.5525 |
-| Logistic Regression | Concatenate | 0.5651 | 0.5583 |
-Table: CITESEER, $P=1$: accuracy and F1 for classifier/preprocessor combinations, best-first by accuracy.
+| CITESEER | -60% | -40% | -25% |
+| AstroPh | -42% | -8% | -2% |
+| Cit-HepPh | -41% | -13% | -12% |
+| AS-Oregon | -39% | -31% | +3% |
+Table: Relative change of the mean MRR from $P=1$ to $P=8$, per decoder.
 
-At $P=1$, the best combinations (random forest or SVC, with Concatenate or Average preprocessing) are competitive with, though not clearly better than, the Hadamard logistic neural decoder from the previous section (0.7870 vs.\ 0.9382 in Table 4 at $P=1$ — the two tables use different train/test splits and are not directly comparable in absolute terms, but the *ranking* of preprocessors within this table is informative in its own right). Notably, logistic regression with Concatenate or Average preprocessing performs far worse (0.5651–0.5673 accuracy, barely above chance) than the same model with Hadamard, L1, or L2 preprocessing (0.7494–0.7693): a linear decision boundary over a raw concatenation or average of two embeddings is a poor fit for the link-prediction task, whereas an explicit pairwise interaction term (Hadamard) or distance term (L1/L2) gives a linear classifier something more directly informative to work with. Random forest and SVC do not show this sensitivity, since both are able to construct nonlinear decision boundaries over the raw concatenated or averaged features without an explicit interaction term.
+Table 8 summarizes the effect as the relative change of the mean MRR between $P=1$ and $P=8$: the bilinear decoder loses $39$--$60\%$ of its MRR, the Hadamard decoder $8$--$40\%$, and the random forest between $+3\%$ and $-25\%$.
 
-The real value of the random forest with concatenated (or averaged) embeddings, however, is its robustness to partitioning, shown in Table 6 across all four datasets used in this paper plus Cit-HepTh, for $P \in \{1, 2, 4, 8\}$.
+### Significance of the partition-count effect
 
-| Dataset | P | Accuracy | F1 |
-|---|---|---|---|
-| CITESEER | 1 | 0.7848 | 0.7354 |
-| CITESEER | 2 | 0.7494 | 0.6825 |
-| CITESEER | 4 | 0.7351 | 0.6581 |
-| CITESEER | 8 | 0.7285 | 0.6424 |
-| AstroPh | 1 | 0.9534 | 0.9524 |
-| AstroPh | 2 | 0.9501 | 0.9491 |
-| AstroPh | 4 | 0.9484 | 0.9472 |
-| AstroPh | 8 | 0.9462 | 0.9449 |
-| Cit-HepPh | 1 | 0.9539 | 0.9533 |
-| Cit-HepPh | 2 | 0.9415 | 0.9401 |
-| Cit-HepPh | 4 | 0.9356 | 0.9339 |
-| Cit-HepPh | 8 | 0.9342 | 0.9322 |
-| Cit-HepTh | 1 | 0.9467 | 0.9459 |
-| Cit-HepTh | 2 | 0.9424 | 0.9415 |
-| Cit-HepTh | 4 | 0.9413 | 0.9401 |
-| Cit-HepTh | 8 | 0.9416 | 0.9404 |
-| AS-Oregon | 1 | 0.9157 | 0.9097 |
-| AS-Oregon | 2 | 0.9127 | 0.9067 |
-| AS-Oregon | 4 | 0.9088 | 0.9023 |
-| AS-Oregon | 8 | 0.9145 | 0.9092 |
-Table: Random forest with concatenated embeddings: accuracy and F1 across partition counts and datasets.
+Table 9 tests the effect of each doubling of $P$ on the MRR, for every decoder, using Cohen's $d$ (negative means MRR decreases with more partitions) and marking with an asterisk the steps that are significant under the Mann--Whitney test.
 
-Where the neural decoders lost 10–30 percentage points of accuracy between $P=1$ and $P=8$ (Table 3), the random forest classifier loses at most 5.6 percentage points over the same range, and on three of the five datasets (AstroPh, Cit-HepTh, AS-Oregon) the loss is under 1.5 percentage points, with Cit-HepTh and AS-Oregon even recovering slightly at $P=8$ relative to $P=4$. This supports the discussion in the vertex_voyage project notes: since each partition is embedded independently, the resulting latent spaces are not mutually aligned, which is expected to hurt a neural decoder that implicitly assumes a smooth, shared latent geometry across the pairs it is trained and evaluated on. A random forest, built from axis-aligned splits over the raw (concatenated or averaged) coordinates rather than from a smooth learned interaction function, is far less sensitive to this misalignment, and can still exploit whatever structure is present within each partition's own coordinates even when cross-partition comparisons are less meaningful.
+| Dataset | Step | Bilinear | Hadamard | RDF |
+|---|---|---|---|---|
+| CITESEER | $P$: 1 $\to$ 2 | -5.35\* | -3.79\* | -0.94\* |
+| CITESEER | $P$: 2 $\to$ 4 | -2.98\* | -0.84 | -0.88 |
+| CITESEER | $P$: 4 $\to$ 8 | -2.96\* | +0.91\* | -0.21 |
+| AstroPh | $P$: 1 $\to$ 2 | -12.27\* | -1.49\* | -1.32\* |
+| AstroPh | $P$: 2 $\to$ 4 | -3.07\* | +0.55 | +0.91\* |
+| AstroPh | $P$: 4 $\to$ 8 | -2.48\* | +0.66 | +0.10 |
+| Cit-HepPh | $P$: 1 $\to$ 2 | -7.86\* | -4.03\* | -0.99 |
+| Cit-HepPh | $P$: 2 $\to$ 4 | -1.79\* | -0.93 | +0.67 |
+| Cit-HepPh | $P$: 4 $\to$ 8 | -1.10\* | +2.90\* | -0.87 |
+| AS-Oregon | $P$: 1 $\to$ 2 | -6.37\* | -3.06\* | -0.16 |
+| AS-Oregon | $P$: 2 $\to$ 4 | -2.10\* | -1.43\* | +0.18 |
+| AS-Oregon | $P$: 4 $\to$ 8 | -0.39 | +0.86 | +0.31 |
+Table: Cohen's $d$ of the MRR between adjacent partition counts ($n = 10$ runs per group); \* marks Mann--Whitney $p < 0.05$.
+
+For the bilinear decoder, $11$ of the $12$ steps are significant and all effects are negative, with very large effect sizes for the first step ($|d|$ between $5.4$ and $12.3$); the only non-significant step is AS-Oregon $P=4 \to 8$ ($p = 0.43$), where the MRR has essentially plateaued. For the Hadamard decoder, $7$ of $12$ steps are significant; the $P=1 \to 2$ step is significantly negative on all datasets, but the later steps are mostly not significant, and two of them are significantly *positive* (CITESEER and Cit-HepPh, $P=4 \to 8$), i.e.\ the MRR recovers. For the random forest, only $3$ of $12$ steps are significant, the effects are mostly below $1$ in magnitude, and their sign changes between steps; on AS-Oregon no step is significant. Partitioning therefore has a large, monotone, and highly significant effect on the bilinear decoder, a mostly one-time effect on the Hadamard decoder, and at most a small, non-monotone effect on the random forest.
+
+## Comparison of decoders
+
+Table 10 compares the decoders directly on the MRR in every (dataset, $P$) group, again with Cohen's $d$ and Mann--Whitney significance (asterisk); a positive value means the first-named decoder scores higher.
+
+| Dataset | $P$ | Bilinear $-$ Hadamard | RDF $-$ Bilinear | RDF $-$ Hadamard |
+|---|---|---|---|---|
+| CITESEER | 1 | +1.99\* | +1.74\* | +3.28\* |
+| CITESEER | 2 | +2.18\* | +3.21\* | +4.45\* |
+| CITESEER | 4 | +1.20 | +3.26\* | +3.55\* |
+| CITESEER | 8 | -2.05\* | +4.50\* | +3.29\* |
+| AstroPh | 1 | +11.87\* | -2.00\* | +10.83\* |
+| AstroPh | 2 | +9.57\* | +2.19\* | +7.13\* |
+| AstroPh | 4 | +8.76\* | +9.37\* | +20.57\* |
+| AstroPh | 8 | +4.18\* | +5.90\* | +8.14\* |
+| Cit-HepPh | 1 | +12.17\* | -2.63\* | +3.54\* |
+| Cit-HepPh | 2 | +7.08\* | +0.99 | +7.81\* |
+| Cit-HepPh | 4 | +5.59\* | +3.64\* | +9.86\* |
+| Cit-HepPh | 8 | +2.38\* | +2.31\* | +3.49\* |
+| AS-Oregon | 1 | +7.77\* | +5.37\* | +7.97\* |
+| AS-Oregon | 2 | +8.86\* | +5.74\* | +7.66\* |
+| AS-Oregon | 4 | +5.21\* | +9.23\* | +11.75\* |
+| AS-Oregon | 8 | +4.12\* | +12.44\* | +15.93\* |
+Table: Cohen's $d$ of the MRR between decoders in each (dataset, $P$) group ($n = 10$); \* marks Mann--Whitney $p < 0.05$; positive means the first-named decoder is higher.
+
+The decoders are ordered **random forest $>$ bilinear $>$ Hadamard** in most configurations. The bilinear decoder is significantly better than the Hadamard decoder in $14$ of $16$ groups, usually with very large effect sizes, the exceptions being CITESEER $P=4$ (a tie) and CITESEER $P=8$, where the Hadamard decoder is significantly better (the same holds for Hits@1 and Hits@3). The random forest is significantly better than the Hadamard decoder in all $16$ groups on all four ranking metrics ($d$ from $+2.5$ to $+20.6$) and significantly better than the bilinear decoder on MRR in $13$ of $16$ groups. Its advantage over the bilinear decoder grows with the partition count, because the bilinear decoder degrades while the random forest stays roughly flat. The exceptions are the unpartitioned dense graphs: at $P=1$ on AstroPh and Cit-HepPh the bilinear decoder is significantly better than the random forest (MRR 68.74% vs.\ 65.93% and 62.95% vs.\ 52.49%), and Cit-HepPh at $P=2$ is a tie.
+
+## Reconstruction quality versus link prediction
+
+| Dataset | P=1 | P=2 | P=4 | P=8 |
+|------------------|----------------|----------------|----------------|----------------|
+| CITESEER | 35.88±1.46 | 43.92±3.25 | 49.72±2.34 | 55.68±6.12 |
+| AstroPh | 70.62±0.08 | 67.76±0.09 | 67.84±0.12 | 67.75±0.11 |
+| Cit-HepPh | 54.87±0.06 | 57.41±0.79 | 60.35±2.12 | 61.59±0.87 |
+| AS-Oregon | 33.88±0.28 | 38.88±1.91 | 45.97±3.79 | 43.20±1.78 |
+Table: RESTORE F1 of the reconstruction from the merged embeddings, in percent, mean ± standard deviation over $10$ runs (values of the bilinear sweep; the other two sweeps agree within run-to-run noise since the score does not depend on the decoder).
+
+Seminar 3 evaluated partitioned embeddings by graph reconstruction. Table 11 shows the RESTORE F1 of the same embeddings used in this experiment: it *increases* with $P$ on CITESEER (35.88% $\to$ 55.68%), Cit-HepPh (54.87% $\to$ 61.59%), and AS-Oregon (33.88% $\to$ 43.20%), and is essentially flat on AstroPh apart from a small drop of about three points between $P=1$ and $P=2$. Compared with Tables 4--7, the reconstruction score and the neural-decoder link-prediction quality therefore move in *opposite directions* as the partition count grows: on CITESEER, for instance, F1 rises by more than $19$ points while the bilinear MRR falls by $60\%$. Partitioning makes each partition's local reconstruction task easier and more self-contained, which the reconstruction score rewards, whereas link prediction on held-out edges additionally requires comparing embeddings of vertices that may lie in different partitions and were trained independently.
+
+The pooled Spearman correlation between the per-run F1 and MRR is positive and significant for all three decoders (bilinear $\rho = 0.62$, Hadamard $\rho = 0.65$, RDF $\rho = 0.67$, $n = 160$ each, $p < 10^{-17}$), but this does not contradict the opposite trends above: it is dominated by differences between datasets (graphs that are easy to embed score high on both), while, within a dataset, the partition count pushes the two quantities apart. Reconstruction F1 is therefore a reasonable indicator of how learnable a graph is, but not a reliable proxy for how well partitioned embeddings support link prediction.
 
 ## Discussion
 
-Two threads run through the results above. First, partitioning strategy matters for downstream quality just as it does for reconstruction quality: LPA's community-preserving assignment consistently outperforms LFM for link prediction at every partition count tested. Second, and more importantly, the relationship between reconstruction quality and downstream link-prediction quality is not a simple positive correlation, and can go in the opposite direction: CITESEER's RESTORE F1 nearly doubles between $P=1$ and $P=32$ while its link-prediction accuracy falls by roughly a quarter over a comparable range. A plausible explanation is that RESTORE F1 measures how well the training graph's own edges are recovered from the embeddings' internal geometry, which increasing partition granularity can improve simply by making each partition's local reconstruction task easier and more self-contained; link-prediction accuracy, in contrast, is measured on edges that were never seen during training, including edges that cross partition boundaries where the decoder or classifier must reconcile two independently trained embedding spaces. A metric that rewards easier per-partition self-consistency is not the same as a metric that rewards generalization across those partitions, and the results in Table 2 show these two properties trading off against each other rather than moving together.
+The main results are consistent with a single explanation. Because every partition is embedded independently, the embedding spaces of different partitions are unrelated, so a pair of vertices from different partitions is scored from vectors that are not comparable. The neural decoders learn one smooth scoring function ($w^\top(u \odot v)$ or $u^\top W v$) that presupposes a shared latent geometry, and the first partition split, which introduces the first cross-partition pairs, is where they lose most (Tables 4--7, Table 9). The random forest builds axis-aligned splits directly on the raw coordinates of $[u; v]$ and does not assume such a geometry, and it is the decoder least affected by partitioning. We stress that this explanation is consistent with the evidence but was not tested directly: the experiments do not separate within-partition test pairs from cross-partition ones.
 
-Regarding decoder and classifier choice, the practical recommendation supported by the results above mirrors the take-home messages already reached in the vertex_voyage project notes: prefer LPA over LFM for partitioning; prefer a random forest over a neural decoder when partition counts are non-trivial, since its robustness to unaligned per-partition latent spaces far outweighs the modest accuracy gap observed at $P=1$; and, if a neural decoder is required (for instance, to obtain a ranking rather than a binary decision), prefer the bilinear $x^\top W y$ architecture, which achieves the best mean reciprocal rank among the architectures tested even though its top-1 accuracy is comparable to the simpler Hadamard-product decoder.
+The practical recommendations are as follows. When the graph must be partitioned, use LPA and a random forest on the concatenated embeddings, which gives the best ranking quality in nearly all configurations with $P \ge 2$ and hardly degrades with the number of partitions. When the graph fits in a single partition and is dense (AstroPh, Cit-HepPh), the bilinear decoder is the best choice. The Hadamard decoder is dominated by the other two in almost every configuration and is not recommended.
+
+**Limitations.** (i) The random forest ranking metrics take values on a grid of $0.01$, whereas those of the neural decoders lie on a grid of $0.001$, which suggests that the random-forest runs were evaluated on a smaller sample of positive edges (about $100$ instead of $1000$); this explains part of their larger standard deviations, and the gaps between the random forest and the neural decoders may change when the sweeps are repeated with an equal sample size. (ii) With $20$ trees the forest's probabilities take only $21$ distinct values, and ties in the ranking are resolved in favor of the true edge, which can favor the random forest relative to the neural decoders. (iii) The neural decoders were not tuned separately for each partition count. (iv) The comparison of LFM and LPA is limited to one dataset and an earlier evaluation protocol, and all main experiments use LPA and four datasets. (v) The significance tests are not corrected for multiple comparisons.
 
 # Conclusion
 
-This paper studied how partitioning strategy, decoder architecture, and classifier choice affect link-prediction quality when embeddings are computed independently, per partition, with static node2vec. Label propagation (LPA) consistently outperformed the Lancichinetti-Fortunato-Kertesz method (LFM) as a partitioning strategy for downstream link prediction, at every partition count compared. More significantly, the same embeddings' graph-reconstruction F1 score and their link-prediction accuracy were found to move in opposite directions as the partition count grew on CITESEER — reconstruction F1 rose from 0.38 to a peak of 0.70 while link-prediction accuracy fell from 0.92 to 0.67 over a comparable range — demonstrating that reconstruction quality is not a reliable stand-in for downstream generalization quality in a partitioned embedding pipeline, a distinction that Seminar 3's reconstruction-only study could not surface on its own. Across four datasets, link-prediction accuracy, Hits@k, and MRR all degraded monotonically with partition count under every neural decoder tested, with the steepest drop occurring between one and two partitions, consistent with the introduction of cross-partition candidate pairs being the dominant source of quality loss. Among the neural decoders, the Hadamard-product logistic model and the bilinear $x^\top W y$ model achieved comparable top-1 accuracy, with $x^\top W y$ giving the best mean reciprocal rank, while a decoder based on the difference of the two embeddings performed markedly worse at every partition count. A random forest classifier trained on concatenated (or averaged) per-partition embeddings was substantially more robust to increasing partition count than any neural decoder, losing at most a few percentage points of accuracy between one and eight partitions across five datasets, because its axis-aligned decision boundaries do not assume the smooth, mutually aligned latent geometry that a neural decoder implicitly requires across independently trained partitions.
+This paper studied how graph partitioning and the choice of link-prediction decoder affect link prediction over node embeddings that are computed independently on each partition with static node2vec. On four datasets, four partition counts, and $10$ runs per configuration, we compared a bilinear decoder, a Hadamard decoder, and a random forest on concatenated embeddings using Hits@$k$ and MRR, with Mann--Whitney tests and Cohen's $d$.
 
-As future work, the dedicated static node2vec sweep referenced in the vertex_voyage project notes (varying epoch count and replication factor systematically across datasets and partition counts) remains to be completed and would sharpen the epoch-budget and replication-factor recommendations only informally available today; extending the LFM/LPA and decoder comparisons to the full five-dataset set used in Seminar 3, once link-prediction runs exist for DBLP and Enron, would also strengthen the generality of the conclusions drawn here. Finally, a more direct investigation of *why* reconstruction F1 and link-prediction accuracy diverge under partitioning — for instance, by decomposing link-prediction accuracy into within-partition and cross-partition test pairs — would help establish whether the divergence is driven entirely by cross-partition pairs, as this paper's evidence suggests, or partly by a more general effect of partition granularity on the two metrics.
+Partitioning strongly degrades the neural decoders: from $P=1$ to $P=8$ the MRR of the bilinear decoder decreases by $39$--$60\%$ (significantly at $11$ of $12$ steps) and that of the Hadamard decoder by $8$--$40\%$, mostly in the first step. The random forest is nearly insensitive: its MRR changes between $+3\%$ and $-25\%$, with only $3$ of $12$ steps significant. Consequently, the decoders are ordered random forest $>$ bilinear $>$ Hadamard in most configurations, with the bilinear decoder best only on unpartitioned dense graphs. In a preliminary single-dataset comparison, LPA gave clearly better link prediction than LFM at every partition count tested. Finally, the reconstruction F1 of the same embeddings *increases* with the partition count on three of the four datasets while neural-decoder link-prediction quality decreases, so reconstruction quality is not a reliable proxy for downstream link-prediction quality in a partitioned embedding pipeline, a distinction that Seminar 3's reconstruction-only study could not surface.
+
+Future work should (a) repeat the random-forest sweep with the same number of ranked positives as the neural decoders and with random tie-breaking, (b) split the test pairs into within-partition and cross-partition pairs to test directly whether cross-partition pairs cause the degradation, (c) tune the neural decoders per partition count and consider aligning the per-partition embedding spaces (for instance by a learned linear map) before decoding, (d) extend the LFM/LPA comparison and the decoder study to the remaining Seminar 3 datasets (DBLP, Enron), and (e) study the replication factor, which lets a vertex be embedded in several partitions, as a means to recover link-prediction quality.
 
 # References
