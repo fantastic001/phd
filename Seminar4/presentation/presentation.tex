@@ -1,0 +1,464 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{Berlin}
+\usecolortheme{default}
+
+\usepackage{fontspec}
+\usepackage{booktabs}
+\usepackage{amsmath}
+
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{navigation symbols}{}
+
+\title[Partitioning and Link Prediction]{Effect of Graph Partitioning on Link Prediction with Bilinear, Hadamard, and Random Forest Decoders}
+\author{Stefan Nožinić}
+\institute{Seminar 4}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+% ============================================================
+\section{Motivation}
+% ============================================================
+
+\begin{frame}{Motivation}
+  \begin{itemize}
+    \item Large graphs that do not fit on one machine are embedded by partitioning the graph, embedding each partition independently, and merging the results.
+    \item Each partition has its own skip-gram embedding space, so vectors from different partitions are not directly comparable.
+    \item Link prediction asks whether embeddings generalize to edges that were \textbf{not} seen during training, which is what downstream recommendation depends on.
+    \item Seminar 3 studied reconstruction only. Does a good reconstruction score imply good link prediction?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Problem Formulation}
+  Given a static graph partitioned into $P$ partitions, each embedded independently with static node2vec, how do
+  \begin{itemize}
+    \item the partition count $P$ and the partitioning strategy (LFM vs.\ LPA),
+    \item the link-prediction decoder (bilinear, Hadamard, random forest)
+  \end{itemize}
+  affect link-prediction quality, and how does that quality relate to reconstruction quality?
+\end{frame}
+
+% ============================================================
+\section{Method}
+% ============================================================
+
+\begin{frame}{Partitioned Embedding Pipeline}
+  \begin{enumerate}
+    \item Hold out $10\%$ of the edges as positive test pairs; draw an equal number of non-edges as negatives.
+    \item Partition the training graph once into $P$ partitions.
+    \item Embed each partition's induced subgraph independently with static node2vec.
+    \item Merge per-partition embeddings into one embedding per vertex; train the decoder on the merged embeddings.
+    \item Evaluate the decoder on the held-out pairs.
+  \end{enumerate}
+  \vspace{0.5em}
+  A pair whose endpoints lie in different partitions is scored from two independently trained spaces; this is expected to drive most of the loss.
+\end{frame}
+
+\begin{frame}{Partitioners}
+  Both are community-detection based: detect communities, then pack them into exactly $P$ partitions with a size-balancing greedy bin-packing step.
+  \begin{itemize}
+    \item \textbf{LPA} (label propagation): communities are disjoint, so every vertex belongs to exactly one partition. No tunable parameters.
+    \item \textbf{LFM} (Lancichinetti--Fortunato--Kertesz): greedy fitness-based growth from seed vertices; communities may overlap, so a vertex can appear in several partitions.
+  \end{itemize}
+  \vspace{0.5em}
+  All main experiments use LPA.
+\end{frame}
+
+\begin{frame}{Link-Prediction Decoders}
+  Given merged embeddings $u = z(a)$, $v = z(b)$:
+  \begin{itemize}
+    \item \textbf{Hadamard}: $s(u,v) = w^\top (u \odot v) = \sum_{i} w_i u_i v_i$
+    \item \textbf{Bilinear}: $s(u,v) = u^\top W v$, with $W \in \mathbb{R}^{d \times d}$ unrestricted
+    \item \textbf{Random forest}: 20 trees on the concatenated vector $[u; v] \in \mathbb{R}^{2d}$, axis-aligned splits on raw coordinates
+  \end{itemize}
+  \vspace{0.5em}
+  Neural decoders: $\hat{y} = \sigma(s(u,v))$, binary cross-entropy, minibatch SGD. An edge is predicted when $\hat{y} > 0.5$.
+\end{frame}
+
+% ============================================================
+\section{Experimental Setup}
+% ============================================================
+
+\begin{frame}{Datasets}
+  \footnotesize
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Dataset & Nodes & Edges & Avg. deg. & Avg. clust. & Density & Modularity \\
+    \midrule
+    CITESEER  & 3264  & 4536   & 2.78  & 0.145 & 0.0009  & 0.72 \\
+    AstroPh   & 18772 & 198110 & 21.11 & 0.631 & 0.00112 & 0.33 \\
+    AS-Oregon & 11806 & 38781  & 6.57  & 0.399 & 0.00056 & 0.57 \\
+    Cit-HepPh & 34546 & 420921 & 24.37 & 0.285 & 0.00071 & 0.67 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{1em}
+
+  Four real-world graphs that vary in size, density, and community structure.
+\end{frame}
+
+\begin{frame}{Embedding Parameters and Protocol}
+  \begin{columns}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \small Dataset-specific node2vec parameters
+      \begin{tabular}{lrrr}
+        \toprule
+        Dataset & $p$ & $q$ & $d$ \\
+        \midrule
+        CITESEER  & 0.5 & 0.25 & 50 \\
+        AstroPh   & 2   & 0.25 & 50 \\
+        Cit-HepPh & 4   & 0.25 & 100 \\
+        AS-Oregon & 0.5 & 2    & 128 \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item Fixed for all datasets: $r=10$ walks, length $l=80$, window $w=10$, $K=5$ negatives, 10 epochs.
+        \item Ranking protocol: up to 1000 positive test edges, each ranked against 500 random negative candidates.
+        \item $4 \times 4 \times 3 \times 10 = 480$ runs; each run repeats split, partitioning, embedding, and decoder training.
+        \item Mann--Whitney $U$ test and Cohen's $d$ at $\alpha = 0.05$, no multiple-comparison correction.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{Results}
+% ============================================================
+
+\begin{frame}{Preliminary: LFM vs.\ LPA on CITESEER}
+  \scriptsize
+  \begin{tabular}{llrr}
+    \toprule
+    Strategy & Partitions & LP accuracy & RESTORE F1 \\
+    \midrule
+    Baseline & 1  & 0.9209 $\pm$ 0.0105 & 0.3782 $\pm$ 0.0110 \\
+    \midrule
+    LFM      & 2  & 0.6884 $\pm$ 0.0109 & 0.3154 $\pm$ 0.0122 \\
+    LFM      & 4  & 0.5576 $\pm$ 0.0159 & 0.2693 $\pm$ 0.0087 \\
+    LFM      & 8  & 0.5401 $\pm$ 0.0173 & 0.2099 $\pm$ 0.0065 \\
+    \midrule
+    LPA      & 2  & 0.8026 $\pm$ 0.0193 & 0.4516 $\pm$ 0.0360 \\
+    LPA      & 4  & 0.7485 $\pm$ 0.0061 & 0.4816 $\pm$ 0.0128 \\
+    LPA      & 8  & 0.7128 $\pm$ 0.0200 & 0.5401 $\pm$ 0.0107 \\
+    LPA      & 16 & 0.6874 $\pm$ 0.0148 & 0.6264 $\pm$ 0.0133 \\
+    LPA      & 32 & 0.6765 $\pm$ 0.0169 & 0.7017 $\pm$ 0.0049 \\
+    LPA      & 64 & 0.6681 $\pm$ 0.0114 & 0.6922 $\pm$ 0.0047 \\
+    LPA      & 128 & 0.6888 $\pm$ 0.0180 & 0.6569 $\pm$ 0.0141 \\
+    LPA      & 256 & 0.6791 $\pm$ 0.0157 & 0.6293 $\pm$ 0.0199 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.5em}
+
+  \small Preliminary, single dataset, earlier protocol. LPA beats LFM at every shared partition count, which motivates LPA in the main experiment.
+\end{frame}
+
+\begin{frame}{MRR (\%) vs.\ Partition Count}
+  \scriptsize
+  \begin{tabular}{llrrrr}
+    \toprule
+    Dataset & Decoder & $P{=}1$ & $P{=}2$ & $P{=}4$ & $P{=}8$ \\
+    \midrule
+    CITESEER  & Bilinear  & 27.61$\pm$1.82 & 17.90$\pm$1.80 & 13.80$\pm$0.71 & 10.94$\pm$1.17 \\
+              & Hadamard  & 22.92$\pm$2.80 & 13.88$\pm$1.88 & 12.49$\pm$1.37 & 13.87$\pm$1.66 \\
+              & RDF       & \textbf{32.27$\pm$1.47} & \textbf{28.02$\pm$2.03} & \textbf{24.75$\pm$1.77} & \textbf{23.99$\pm$1.37} \\
+    \midrule
+    AstroPh   & Bilinear  & \textbf{68.74$\pm$1.32} & 51.03$\pm$1.55 & 45.19$\pm$2.19 & 39.64$\pm$2.28 \\
+              & Hadamard  & 32.34$\pm$4.13 & 26.84$\pm$3.22 & 28.24$\pm$1.63 & 29.63$\pm$2.50 \\
+              & RDF       & 62.73$\pm$1.28 & \textbf{62.05$\pm$1.87} & \textbf{62.70$\pm$1.40} & \textbf{61.95$\pm$0.91} \\
+    \midrule
+    Cit-HepPh & Bilinear  & \textbf{62.95$\pm$1.13} & 44.85$\pm$3.05 & 39.60$\pm$2.81 & 36.91$\pm$2.02 \\
+              & Hadamard  & 37.05$\pm$2.79 & 28.38$\pm$1.22 & 27.15$\pm$1.43 & 32.15$\pm$1.98 \\
+              & RDF       & 53.23$\pm$0.97 & \textbf{49.86$\pm$1.59} & \textbf{47.96$\pm$0.75} & \textbf{47.55$\pm$1.08} \\
+    \midrule
+    AS-Oregon & Bilinear  & 25.08$\pm$0.95 & 18.69$\pm$1.05 & 15.96$\pm$1.51 & 15.34$\pm$1.63 \\
+              & Hadamard  & 14.48$\pm$1.68 & 10.47$\pm$0.78 & 9.12$\pm$1.08 & 9.97$\pm$0.86 \\
+              & RDF       & \textbf{43.26$\pm$1.49} & \textbf{46.25$\pm$1.68} & \textbf{46.09$\pm$1.69} & \textbf{45.13$\pm$1.13} \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \scriptsize Mean $\pm$ std over 10 runs, LPA partitioning. Bold: best decoder per dataset and $P$.
+\end{frame}
+
+\begin{frame}{Hits@1 (\%) vs.\ Partition Count}
+  \scriptsize
+  \begin{tabular}{llrrrr}
+    \toprule
+    Dataset & Decoder & $P{=}1$ & $P{=}2$ & $P{=}4$ & $P{=}8$ \\
+    \midrule
+    CITESEER  & Bilinear  & 17.70$\pm$1.14 & 11.08$\pm$1.79 & 8.08$\pm$0.99 & 5.76$\pm$1.10 \\
+              & Hadamard  & 14.37$\pm$2.65 & 8.21$\pm$1.77 & 7.64$\pm$1.59 & 9.38$\pm$1.50 \\
+              & RDF       & \textbf{23.91$\pm$1.43} & \textbf{21.55$\pm$1.96} & \textbf{18.79$\pm$1.72} & \textbf{18.28$\pm$1.61} \\
+    \midrule
+    AstroPh   & Bilinear  & \textbf{56.79$\pm$1.58} & 38.54$\pm$1.70 & 32.57$\pm$2.29 & 27.68$\pm$2.34 \\
+              & Hadamard  & 20.73$\pm$3.46 & 16.93$\pm$2.98 & 18.53$\pm$1.79 & 19.56$\pm$2.49 \\
+              & RDF       & 54.44$\pm$1.42 & \textbf{53.86$\pm$1.85} & \textbf{54.79$\pm$1.53} & \textbf{53.81$\pm$1.38} \\
+    \midrule
+    Cit-HepPh & Bilinear  & \textbf{48.38$\pm$1.47} & 31.05$\pm$2.81 & 27.10$\pm$2.54 & 24.90$\pm$1.91 \\
+              & Hadamard  & 22.45$\pm$2.49 & 17.08$\pm$1.24 & 16.08$\pm$1.42 & 19.93$\pm$1.69 \\
+              & RDF       & 40.31$\pm$0.92 & \textbf{37.57$\pm$1.81} & \textbf{35.82$\pm$1.05} & \textbf{35.31$\pm$1.32} \\
+    \midrule
+    AS-Oregon & Bilinear  & 14.99$\pm$1.07 & 9.70$\pm$1.23 & 7.83$\pm$1.13 & 7.57$\pm$1.40 \\
+              & Hadamard  & 6.99$\pm$1.44 & 4.92$\pm$0.73 & 4.08$\pm$0.88 & 4.49$\pm$0.91 \\
+              & RDF       & \textbf{38.06$\pm$1.60} & \textbf{41.44$\pm$1.77} & \textbf{41.58$\pm$1.75} & \textbf{40.47$\pm$1.08} \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \scriptsize Mean $\pm$ std over 10 runs, LPA partitioning. Bold: best decoder per dataset and $P$.
+\end{frame}
+
+\begin{frame}{Hits@3 (\%) vs.\ Partition Count}
+  \scriptsize
+  \begin{tabular}{llrrrr}
+    \toprule
+    Dataset & Decoder & $P{=}1$ & $P{=}2$ & $P{=}4$ & $P{=}8$ \\
+    \midrule
+    CITESEER  & Bilinear  & 32.25$\pm$2.93 & 19.69$\pm$1.80 & 15.54$\pm$1.02 & 12.01$\pm$1.69 \\
+              & Hadamard  & 25.94$\pm$3.57 & 15.56$\pm$2.43 & 13.75$\pm$1.36 & 15.67$\pm$1.49 \\
+              & RDF       & \textbf{35.70$\pm$2.07} & \textbf{30.40$\pm$2.22} & \textbf{26.91$\pm$2.05} & \textbf{26.14$\pm$1.59} \\
+    \midrule
+    AstroPh   & Bilinear  & \textbf{77.48$\pm$1.50} & 58.30$\pm$2.02 & 51.70$\pm$2.66 & 44.71$\pm$3.24 \\
+              & Hadamard  & 36.65$\pm$4.97 & 29.82$\pm$3.68 & 30.90$\pm$1.76 & 32.72$\pm$2.94 \\
+              & RDF       & 66.61$\pm$1.61 & \textbf{66.12$\pm$2.10} & \textbf{66.49$\pm$1.64} & \textbf{65.79$\pm$0.88} \\
+    \midrule
+    Cit-HepPh & Bilinear  & \textbf{73.21$\pm$1.82} & 51.77$\pm$4.09 & 45.33$\pm$4.16 & 42.48$\pm$2.77 \\
+              & Hadamard  & 43.07$\pm$3.61 & 32.01$\pm$1.33 & 30.70$\pm$1.90 & 37.74$\pm$2.51 \\
+              & RDF       & 59.91$\pm$1.30 & \textbf{55.79$\pm$1.55} & \textbf{53.65$\pm$1.59} & \textbf{53.51$\pm$1.42} \\
+    \midrule
+    AS-Oregon & Bilinear  & 29.22$\pm$1.24 & 21.21$\pm$1.34 & 17.64$\pm$1.63 & 16.60$\pm$2.03 \\
+              & Hadamard  & 15.45$\pm$2.20 & 10.43$\pm$1.09 & 9.12$\pm$1.22 & 10.19$\pm$1.17 \\
+              & RDF       & \textbf{44.35$\pm$1.48} & \textbf{47.14$\pm$1.69} & \textbf{46.99$\pm$1.70} & \textbf{46.25$\pm$1.53} \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \scriptsize Mean $\pm$ std over 10 runs, LPA partitioning. Bold: best decoder per dataset and $P$.
+\end{frame}
+
+\begin{frame}{Hits@10 (\%) vs.\ Partition Count}
+  \scriptsize
+  \begin{tabular}{llrrrr}
+    \toprule
+    Dataset & Decoder & $P{=}1$ & $P{=}2$ & $P{=}4$ & $P{=}8$ \\
+    \midrule
+    CITESEER  & Bilinear  & 47.37$\pm$3.50 & 30.71$\pm$2.55 & 24.50$\pm$1.34 & 20.73$\pm$1.73 \\
+              & Hadamard  & 38.96$\pm$3.50 & 24.46$\pm$2.45 & 21.52$\pm$1.72 & 21.39$\pm$2.55 \\
+              & RDF       & \textbf{48.23$\pm$2.61} & \textbf{39.67$\pm$2.87} & \textbf{35.59$\pm$2.35} & \textbf{34.02$\pm$2.01} \\
+    \midrule
+    AstroPh   & Bilinear  & \textbf{89.91$\pm$0.78} & 74.46$\pm$1.37 & 69.70$\pm$1.91 & 63.97$\pm$2.55 \\
+              & Hadamard  & 55.58$\pm$5.68 & 46.86$\pm$4.04 & 47.57$\pm$2.19 & 49.85$\pm$2.50 \\
+              & RDF       & 78.96$\pm$1.45 & \textbf{77.90$\pm$2.41} & \textbf{77.85$\pm$1.23} & \textbf{77.67$\pm$0.97} \\
+    \midrule
+    Cit-HepPh & Bilinear  & \textbf{89.85$\pm$0.56} & 72.40$\pm$3.12 & 64.52$\pm$2.83 & 60.36$\pm$2.20 \\
+              & Hadamard  & 67.77$\pm$3.84 & 52.46$\pm$1.58 & 50.80$\pm$1.67 & 57.23$\pm$2.52 \\
+              & RDF       & 79.78$\pm$1.24 & \textbf{74.61$\pm$1.66} & \textbf{72.98$\pm$1.27} & \textbf{72.38$\pm$1.37} \\
+    \midrule
+    AS-Oregon & Bilinear  & 45.39$\pm$1.44 & 36.97$\pm$1.19 & 32.74$\pm$3.00 & 31.59$\pm$2.28 \\
+              & Hadamard  & 29.62$\pm$2.72 & 21.46$\pm$1.93 & 18.50$\pm$2.07 & 20.43$\pm$1.33 \\
+              & RDF       & \textbf{53.71$\pm$1.27} & \textbf{55.58$\pm$1.82} & \textbf{54.53$\pm$1.55} & \textbf{53.72$\pm$1.45} \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \scriptsize Mean $\pm$ std over 10 runs, LPA partitioning. Bold: best decoder per dataset and $P$.
+\end{frame}
+
+\begin{frame}{Relative MRR Change from $P=1$ to $P=8$}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \centering
+      \small
+      \begin{tabular}{lrrr}
+        \toprule
+        Dataset & Bilinear & Hadamard & RDF \\
+        \midrule
+        CITESEER  & -60\% & -39\% & \textbf{-26\%} \\
+        AstroPh   & -42\% & -8\%  & \textbf{-1\%} \\
+        Cit-HepPh & -41\% & -13\% & \textbf{-11\%} \\
+        AS-Oregon & -39\% & -31\% & \textbf{+4\%} \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.40\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item Bilinear loses 39--60\% of its MRR.
+        \item Hadamard loses 8--39\%, mostly in the first step.
+        \item Random forest changes between $+4\%$ and $-26\%$.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Significance of Each Doubling of $P$ (Cohen's $d$, MRR)}
+  \scriptsize
+  \begin{tabular}{llrrr}
+    \toprule
+    Dataset & Step & Bilinear & Hadamard & RDF \\
+    \midrule
+    CITESEER  & $1 \rightarrow 2$ & -5.35* & -3.79* & -2.40* \\
+              & $2 \rightarrow 4$ & -2.98* & -0.84  & -1.72* \\
+              & $4 \rightarrow 8$ & -2.96* & +0.91* & -0.48 \\
+    \midrule
+    AstroPh   & $1 \rightarrow 2$ & -12.27* & -1.49* & -0.43 \\
+              & $2 \rightarrow 4$ & -3.07* & +0.55 & +0.40 \\
+              & $4 \rightarrow 8$ & -2.48* & +0.66 & -0.64 \\
+    \midrule
+    Cit-HepPh & $1 \rightarrow 2$ & -7.86* & -4.03* & -2.55* \\
+              & $2 \rightarrow 4$ & -1.79* & -0.93 & -1.52* \\
+              & $4 \rightarrow 8$ & -1.10* & +2.90* & -0.44 \\
+    \midrule
+    AS-Oregon & $1 \rightarrow 2$ & -6.37* & -3.06* & +1.88* \\
+              & $2 \rightarrow 4$ & -2.10* & -1.43* & -0.09 \\
+              & $4 \rightarrow 8$ & -0.39 & +0.86 & -0.67 \\
+    \bottomrule
+  \end{tabular}
+
+  \footnotesize * Mann--Whitney $p < 0.05$, $n = 10$ per group.
+\end{frame}
+
+\begin{frame}{Significance Summary}
+  \begin{itemize}
+    \item \textbf{Bilinear}: 11 of 12 steps significant, all negative; the only non-significant step is AS-Oregon $4 \rightarrow 8$.
+    \item \textbf{Hadamard}: 7 of 12 significant; $1 \rightarrow 2$ is negative everywhere, while two late steps are significantly positive (the MRR recovers).
+    \item \textbf{Random forest}: 5 of 12 significant, confined to the first two doublings on CITESEER and Cit-HepPh, plus one positive step on AS-Oregon.
+  \end{itemize}
+  \vspace{0.5em}
+  Partitioning has a large, monotone effect on bilinear, a mostly one-time effect on Hadamard, and a dataset-dependent, plateauing effect on the random forest.
+\end{frame}
+
+\begin{frame}{Decoder Comparison (Cohen's $d$, MRR)}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{columns}
+    \begin{column}{0.48\textwidth}
+      \centering CITESEER and AstroPh
+      \begin{tabular}{llrrr}
+        \toprule
+        Dataset & $P$ & B$-$H & R$-$B & R$-$H \\
+        \midrule
+        CITESEER  & 1 & +1.99* & +2.81* & +4.18* \\
+                  & 2 & +2.18* & +5.28* & +7.23* \\
+                  & 4 & +1.20  & +8.11* & +7.75* \\
+                  & 8 & -2.05* & +10.26* & +6.66* \\
+        \midrule
+        AstroPh   & 1 & +11.87* & -4.62* & +9.95* \\
+                  & 2 & +9.57* & +6.42* & +13.38* \\
+                  & 4 & +8.76* & +9.52* & +22.67* \\
+                  & 8 & +4.18* & +12.83* & +17.19* \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering Cit-HepPh and AS-Oregon
+      \begin{tabular}{llrrr}
+        \toprule
+        Dataset & $P$ & B$-$H & R$-$B & R$-$H \\
+        \midrule
+        Cit-HepPh & 1 & +12.17* & -9.24* & +7.75* \\
+                  & 2 & +7.08* & +2.06* & +15.12* \\
+                  & 4 & +5.59* & +4.07* & +18.21* \\
+                  & 8 & +2.38* & +6.57* & +9.67* \\
+        \midrule
+        AS-Oregon & 1 & +7.77* & +14.52* & +18.14* \\
+                  & 2 & +8.86* & +19.63* & +27.23* \\
+                  & 4 & +5.21* & +18.78* & +26.02* \\
+                  & 8 & +4.12* & +21.24* & +35.08* \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5em}
+  \scriptsize B = bilinear, H = Hadamard, R = RDF; $d > 0$: first-named higher. * $p < 0.05$.
+\end{frame}
+
+\begin{frame}{Decoder Ordering}
+  \begin{itemize}
+    \item Most configurations are ordered \textbf{random forest $>$ bilinear $>$ Hadamard}.
+    \item Random forest beats Hadamard significantly in all 16 groups on all four ranking metrics.
+    \item Bilinear beats Hadamard significantly in 14 of 16 groups on MRR.
+    \item Random forest beats bilinear on MRR in 14 of 16 groups; its advantage grows with $P$ (AS-Oregon: $d$ from $+14.5$ to $+21.2$).
+    \item Exceptions: unpartitioned dense graphs. At $P=1$, bilinear beats random forest on AstroPh (68.74\% vs.\ 62.73\%) and Cit-HepPh (62.95\% vs.\ 53.23\%).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{RESTORE F1 (\%) of the Same Embeddings}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \centering
+      \small
+      \begin{tabular}{lrrrr}
+        \toprule
+        Dataset & $P{=}1$ & $P{=}2$ & $P{=}4$ & $P{=}8$ \\
+        \midrule
+        CITESEER  & 35.88 & 43.92 & 49.72 & 55.68 \\
+        AstroPh   & 70.62 & 67.76 & 67.84 & 67.75 \\
+        Cit-HepPh & 54.87 & 57.41 & 60.35 & 61.59 \\
+        AS-Oregon & 33.88 & 38.88 & 45.97 & 43.20 \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.40\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item F1 rises with $P$ on CITESEER, Cit-HepPh, and AS-Oregon, while bilinear MRR falls by 60\% on CITESEER.
+        \item Partitioning makes local reconstruction easier; link prediction also needs cross-partition comparisons.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Reconstruction vs.\ Link Prediction}
+  \begin{itemize}
+    \item Pooled Spearman $\rho$ between per-run F1 and MRR is positive for all decoders ($\rho = 0.62$--$0.72$, $n=160$).
+    \item This is driven by dataset differences: graphs that are easy to embed score high on both.
+    \item Within a dataset, increasing $P$ pushes the two quantities apart.
+  \end{itemize}
+  \vspace{0.5em}
+  Reconstruction F1 indicates how learnable a graph is, but is \textbf{not} a reliable proxy for how well partitioned embeddings support link prediction.
+\end{frame}
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item Partitioning strongly degrades neural decoders: bilinear MRR falls by 39--60\% and Hadamard by 8--39\% from $P=1$ to $P=8$.
+    \item Random forest on concatenated embeddings is far less sensitive ($+4\%$ to $-26\%$).
+    \item Decoder ordering: random forest $>$ bilinear $>$ Hadamard in most configurations; bilinear is best only on unpartitioned dense graphs.
+    \item Reconstruction F1 rises with $P$ while link prediction falls, so reconstruction is not a proxy for downstream link prediction.
+    \item LPA beats LFM in a preliminary single-dataset comparison.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Future Work}
+  \begin{itemize}
+    \item Split test pairs into within-partition and cross-partition pairs to test whether cross-partition pairs cause the degradation.
+    \item Align per-partition embedding spaces (e.g.\ with a learned linear map) before decoding.
+    \item Tune the neural decoders per partition count; repeat ranking evaluation with random tie-breaking.
+    \item Extend the LFM vs.\ LPA comparison and the decoder study to more datasets.
+    \item Study the replication factor as a way to recover link-prediction quality.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \centering
+  \Large Thank you!
+\end{frame}
+
+\end{document}
