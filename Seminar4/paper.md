@@ -10,7 +10,7 @@ bibliography: ./refs.bib
 
 A graph is a mathematical structure consisting of vertices (or nodes) connected by edges. Graphs are widely used to model relationships and interactions in various domains [@van_der_hofstad_random_2024], such as social networks [@leskovec_signed_2010] [@backstrom_group_2006] [@rozemberczki_twitch_2021], collaboration networks [@savic_analysis_2017], terrorist networks [@krebs_mapping_2002] and blog citation networks [@adamic_political_2005]. Graph vertex embeddings represent vertices as low-dimensional vectors, enabling machine learning tasks such as vertex classification, community detection, and link prediction [@leskovec_predicting_2010]. Among these downstream tasks, link prediction is of particular practical importance: it underlies friend and content recommendation, knowledge-graph completion [@bordes_translating_2013], and the inference of missing or future edges in evolving networks.
 
-State-of-the-art embedding methods such as node2vec [@grover_node2vec_2016] compute embeddings from a single, monolithic training pass over the whole graph. When the graph is too large to embed on one machine, a common strategy is to partition the graph, embed each partition independently, and combine the resulting per-partition embeddings for downstream use [@fang_distributed_2023] [@lombardo_scalable_2019]. This paper's companion study (Seminar 3) examined how such partitioning affects the *reconstruction* quality of the embeddings — how well the embeddings recover the edges of the graph they were trained on. Link prediction poses a different and arguably more practically relevant question: how well do the embeddings generalize to edges that were *not* observed during training? Because independently embedded partitions have no shared frame of reference — each partition's embedding space is the arbitrary output of a separate skip-gram training run [@church_word2vec_2017] — a decoder or classifier that combines embeddings from different partitions must cope with per-partition embedding spaces that are not directly comparable to one another. This raises questions that do not arise in the single-partition setting: which partitioning strategy best preserves the community structure that link prediction relies on, which decoder architecture best tolerates misaligned per-partition latent spaces, and whether a downstream classifier can be made robust to this misalignment at all.
+State-of-the-art embedding methods such as node2vec [@grover_node2vec_2016] compute embeddings from a single, monolithic training pass over the whole graph. When the graph is too large to embed on one machine, a common strategy is to partition the graph, embed each partition independently, and combine the resulting per-partition embeddings for downstream use [@fang_distributed_2023] [@lombardo_scalable_2019]. Link prediction poses practically relevant question: how well do the embeddings generalize to edges that were *not* observed during training? Because independently embedded partitions have no shared frame of reference — each partition's embedding space is the arbitrary output of a separate skip-gram training run [@church_word2vec_2017] — a decoder or classifier that combines embeddings from different partitions must cope with per-partition embedding spaces that are not directly comparable to one another. This raises questions that do not arise in the single-partition setting: which partitioning strategy best preserves the community structure that link prediction relies on, which decoder architecture best tolerates misaligned per-partition latent spaces, and whether a downstream classifier can be made robust to this misalignment at all.
 
 # Problem Formulation
 
@@ -29,15 +29,15 @@ Link prediction from vertex embeddings is commonly formulated as a binary classi
 
 Evaluation protocol matters as much as the decoder. Li et al. [@li_evaluating_2023] point out that link-prediction results are often not comparable because of inconsistent evaluation settings, and propose the HeaRT benchmark, which ranks every positive test edge against a set of 500 negative candidates and reports the mean reciprocal rank (MRR) and Hits@k. The ranking protocol used in this paper follows this per-positive design, but draws the candidates uniformly at random instead of selecting hard negatives with heuristics.
 
-Partitioning a graph while preserving the community structure it relies on is itself a well-studied problem. Community-detection-based partitioners are the natural choice when partitioning is intended to preserve locality for downstream embedding: the label propagation algorithm (LPA) [@raghavan_near_2007] assigns each vertex the most frequent label among its neighbors, iterating until labels stabilize into communities, while the Lancichinetti-Fortunato-Kertesz (LFM) method [@lancichinetti_detecting_2009] detects (possibly overlapping) communities by greedily optimizing a local fitness function around a seed vertex. Both methods have been used as static graph partitioners in this line of work, and this paper compares their impact on downstream link-prediction quality, complementing Seminar 3's neighbor-based buffered partitioner for online node arrivals, and the classical static partitioning literature surveyed there [@benlic_effective_2010] [@sanders_distributed_2012] [@sanders_engineering_2011] [@romero_ruiz_memetic_2018] [@catalyurek_more_2023].
+Partitioning a graph while preserving the community structure it relies on is itself a well-studied problem. Community-detection-based partitioners are the natural choice when partitioning is intended to preserve locality for downstream embedding: the label propagation algorithm (LPA) [@raghavan_near_2007] assigns each vertex the most frequent label among its neighbors, iterating until labels stabilize into communities, while the Lancichinetti-Fortunato-Kertesz (LFM) method [@lancichinetti_detecting_2009] detects (possibly overlapping) communities by greedily optimizing a local fitness function around a seed vertex. Both methods have been used as static graph partitioners in this line of work, and this paper compares their impact on downstream link-prediction quality, complementing the classical static partitioning literature surveyed there [@benlic_effective_2010] [@sanders_distributed_2012] [@sanders_engineering_2011] [@romero_ruiz_memetic_2018] [@catalyurek_more_2023].
 
-Distributed embedding systems that partition a graph before embedding face a fundamental representation problem once embeddings must be combined across partitions: because each partition is embedded independently, there is no guarantee that geometrically similar vectors in two different partitions' embedding spaces represent structurally similar vertices. This paper studies the practical consequences of that misalignment for link prediction, complementing Seminar 3's study of its consequences for graph reconstruction.
+Distributed embedding systems that partition a graph before embedding face a fundamental representation problem once embeddings must be combined across partitions: because each partition is embedded independently, there is no guarantee that geometrically similar vectors in two different partitions' embedding spaces represent structurally similar vertices. This paper studies the practical consequences of that misalignment for link prediction.
 
 # Contributions
 
 This paper makes the following contributions:
 
-* We measure, on four real-world graphs with 10 independent runs per configuration, how the partition count affects link prediction over independently computed static node2vec embeddings for three decoders (bilinear, Hadamard, random forest), using a per-positive ranking protocol (Hits@k, MRR) and statistical tests (Mann--Whitney, Cohen's $d$).
+* We measure, on four real-world graphs with 10 independent runs per configuration, how the partition count affects link prediction over independently computed static node2vec embeddings for three decoders (bilinear, Hadamard, random forest), using a per-positive ranking protocol (Hits@k, MRR).
 * We show that the neural decoders lose a large part of their ranking quality when the graph is partitioned, whereas a random forest on concatenated embeddings is far less sensitive to the partition count, and we derive a decoder ordering (random forest > bilinear > Hadamard) together with the conditions in which it changes.
 * We show that graph-reconstruction F1 and neural-decoder link-prediction quality move in opposite directions as the partition count grows, so reconstruction quality is not a reliable proxy for downstream link-prediction quality, and we compare LFM and LPA partitioning in a preliminary experiment.
 
@@ -55,7 +55,7 @@ A candidate pair $(u, v)$ may span two different partitions. For a pair whose ve
 
 ## Graph partitioning
 
-Both partitioners are community-detection-based and follow the same two-step scheme: detect communities in $G_{\text{train}}$, then pack the communities into exactly $P$ partitions with a greedy, size-balancing bin-packing heuristic (communities sorted by size, each placed into the currently smallest partition). Vertices of $G_{\text{train}}$ therefore stay together with their community, and the partition sizes are kept approximately equal.
+Both partitioners are community-detection-based and follow the same two-step scheme: detect communities in $G_{\text{train}}$, then pack the communities into exactly $P$ partitions with a greedy, size-balancing bin-packing heuristic (communities sorted by size, each placed into the currently smallest partition) [@gupta_new_1999]. Vertices of $G_{\text{train}}$ therefore stay together with their community, and the partition sizes are kept approximately equal.
 
 **LPA (Label Propagation Algorithm)** [@raghavan_near_2007]: every vertex is initialized with a unique label $\ell(v) = v$. In each sweep, vertices are visited in random order and each vertex adopts the label held by the plurality of its neighbors, with ties broken uniformly at random,
 
@@ -69,7 +69,7 @@ $$ f(C) = \frac{k_{\text{in}}(C)}{\big(k_{\text{in}}(C) + k_{\text{out}}(C)\big)
 
 where $k_{\text{in}}(C)$ and $k_{\text{out}}(C)$ are the total internal and external degrees of $C$ and $\alpha$ is a resolution parameter. At each step the neighboring vertex with the largest positive fitness gain is added, vertices whose removal increases fitness are dropped, and growth stops when no neighbor improves fitness. Communities produced this way may overlap. A modified variant is used here, which (i) repeats seeding until the fraction of uncovered vertices falls to a threshold $\tau$, (ii) caps the number of communities at $10 P$ to guarantee termination when growth does not converge, (iii) pads with empty communities if fewer than $P$ are found, and (iv) assigns any vertex still uncovered to a uniformly random community. Parameters are $\alpha = 1$ and $\tau = 0$ (every vertex must be covered). Because LFM communities can overlap, a vertex may end up in more than one partition after bin packing; this is handled in the embedding-merging step below.
 
-Both methods partition the graph based on its community structure rather than on vertex arrival order, in contrast to the online, neighbor-count-based partitioner used in Seminar 3. Because the full training graph is known in advance, both can consider the entire neighborhood of every vertex.
+Both methods partition the graph based on its community structure. Because the full training graph is known in advance, both can consider the entire neighborhood of every vertex.
 
 ## Embedding model
 
@@ -91,7 +91,7 @@ where $z$ and $z'$ are the input and context vectors and $K$ negative samples ar
 | AS-Oregon | 0.5 | 2    | 128 |
 Table: Node2vec return parameter $p$, in-out parameter $q$, and embedding dimension $d$ for each dataset.
 
-Since a vertex can belong to several partitions (only under LFM), the final embedding of vertex $u$ is the mean of its per-partition embeddings, as in Seminar 3:
+Since a vertex can belong to several partitions (only under LFM), the final embedding of vertex $u$ is the mean of its per-partition embeddings:
 
 $$ z_u = \frac{1}{|\mathcal{R}_u|} \sum_{p \in \mathcal{R}_u} z_u^{(p)} , $$
 
@@ -99,19 +99,19 @@ where $\mathcal{R}_u$ is the set of partitions containing $u$. Under LPA, $|\mat
 
 ## Link-prediction data and decoders
 
-**Held-out edges.** A uniformly random $10\%$ of the edges of $G$ is removed and kept as the positive test set $E^{+}_{\text{test}}$; the rest form $G_{\text{train}}$, on which partitioning and embedding are performed. The negative test set $E^{-}_{\text{test}}$ contains $|E^{+}_{\text{test}}|$ vertex pairs $(u, v)$, $u \neq v$, drawn uniformly at random from $V \times V$ subject to $(u, v) \notin E$, so the test set is balanced.
+A uniformly random $10\%$ of the edges of $G$ is removed and kept as the positive test set $E^{+}_{\text{test}}$; the rest form $G_{\text{train}}$, on which partitioning and embedding are performed. The negative test set $E^{-}_{\text{test}}$ contains $|E^{+}_{\text{test}}|$ vertex pairs $(u, v)$, $u \neq v$, drawn uniformly at random from $V \times V$ subject to $(u, v) \notin E$, so the test set is balanced.
 
-**Decoder training data.** Positive training pairs are edges of $G_{\text{train}}$ and negative training pairs are uniformly random vertex pairs that are not edges of $G_{\text{train}}$, with as many negatives as positives. The training edges are randomly split $80\%/20\%$ into training and validation sets. This procedure is repeated $10$ times with independent random splits and negatives, and the decoder with the lowest final validation loss is kept.
+Positive training pairs are edges of $G_{\text{train}}$ and negative training pairs are uniformly random vertex pairs that are not edges of $G_{\text{train}}$, with as many negatives as positives. The training edges are randomly split $80\%/20\%$ into training and validation sets. This procedure is repeated $10$ times with independent random splits and negatives, and the decoder with the lowest final validation loss is kept.
 
 Given the merged embeddings $u = z(a)$ and $v = z(b)$ of two vertices $a, b$, three decoders producing a link score are compared.
 
-**Hadamard decoder.** The embeddings are combined with the elementwise (Hadamard) product [@grover_node2vec_2016] and passed through a learned linear layer without bias:
+The embeddings are combined with the elementwise (Hadamard) product [@grover_node2vec_2016] and passed through a learned linear layer without bias:
 
 $$ s(u, v) = w^\top (u \odot v) = \sum_{i=1}^{d} w_i u_i v_i , $$
 
 with learned weights $w \in \mathbb{R}^d$. This is the simplest decoder considered and is equivalent to logistic regression on the Hadamard feature vector.
 
-**Bilinear decoder.** A learned matrix $W \in \mathbb{R}^{d \times d}$ captures interactions between all pairs of coordinates of the two embeddings:
+A learned matrix $W \in \mathbb{R}^{d \times d}$ captures interactions between all pairs of coordinates of the two embeddings:
 
 $$ s(u, v) = u^\top W v , $$
 
@@ -123,13 +123,13 @@ $$ \mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \Big[ y_i \log \hat{y}_i + (1 - y_i
 
 with minibatch stochastic gradient descent (no momentum), batch size $32$, learning rate $0.1$, and $10$ epochs.
 
-**Random forest (RDF).** Instead of a hand-designed interaction between the two embeddings, a random forest [@breiman_random_2001] is trained on the concatenated feature vector $[u; v] \in \mathbb{R}^{2d}$. The forest consists of $20$ decision trees, each grown on a bootstrap sample of the training pairs and choosing every split from a random subset of the features, with a fixed random seed; the predicted link probability is the mean of the trees' class-probability estimates. Because it builds axis-aligned splits directly on the raw coordinates, the random forest does not assume that the two embeddings live in a common, smoothly varying latent geometry.
+Instead of a hand-designed interaction between the two embeddings, a random forest [@breiman_random_2001] is trained on the concatenated feature vector $[u; v] \in \mathbb{R}^{2d}$. The forest consists of $20$ decision trees, each grown on a bootstrap sample of the training pairs and choosing every split from a random subset of the features, with a fixed random seed; the predicted link probability is the mean of the trees' class-probability estimates. Because it builds axis-aligned splits directly on the raw coordinates, the random forest does not assume that the two embeddings live in a common, smoothly varying latent geometry.
 
 For all three decoders a pair is predicted to be an edge if $\hat{y} > 0.5$.
 
 ## Benchmarks and evaluation metrics
 
-The decoders are evaluated on the held-out pairs with two complementary protocols, alongside the reconstruction score used in Seminar 3.
+The decoders are evaluated on the held-out pairs with two complementary protocols, alongside the reconstruction score used in [@yip_restore_2023].
 
 **Classification metrics**: on the balanced test set $E^{+}_{\text{test}} \cup E^{-}_{\text{test}}$, precision, recall, F1 score, and accuracy of the edge/non-edge decision at threshold $0.5$ are computed. Accuracy is used in the preliminary comparison of partitioning strategies.
 
@@ -143,7 +143,21 @@ $$ \text{MRR} = \frac{1}{|S|} \sum_{(a,b) \in S} \frac{1}{\text{rank}(a, b)} ; $
 
 Unlike the balanced classification metrics, the ranking metrics ask whether the true neighbor scores above hundreds of alternatives for the same source vertex, which is a considerably harder and more discriminative task.
 
-**RESTORE F1 (graph reconstruction)**: as in Seminar 3 [@yip_restore_2023], the graph is reconstructed from the merged embeddings by connecting the $m = |E_{\text{train}}|$ closest vertex pairs in the embedding space, and the F1 score of the neighborhood-level precision and recall with respect to $G_{\text{train}}$ is computed, using the definitions given in Seminar 3. It is evaluated on the training graph, not on the held-out edges, and is reported alongside the link-prediction metrics specifically to contrast reconstruction quality against generalization quality on the same set of embeddings.
+**RESTORE F1 (graph reconstruction)**: following [@yip_restore_2023], the graph is reconstructed from the merged embeddings by connecting the $m = |E_{\text{train}}|$ closest vertex pairs in the embedding space, and the F1 score of the neighborhood-level precision and recall with respect to $G_{\text{train}}$ is computed.
+
+Higher F1-scores indicate better preservation of graph structure in the embeddings. Let $G = (V,E)$ be the original graph and $G' = (V,E')$ be the reconstructed graph from embeddings. $G'$ is constructed by connecting the $m$ closest vertex pairs in the embedding space, where $m$ is the number of edges in the original graph. The F1-score is calculated as follows:
+
+$$ F1 = 2 * \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} $$
+
+where
+
+$$ \text{Precision} = \frac{1}{|V|} \sum_{v \in V} \frac{|N(v) \cap N'(v)|}{|N'(v)|} $$
+
+$$ \text{Recall} = \frac{1}{|V|} \sum_{v \in V} \frac{|N(v) \cap N'(v)|}{|N(v)|} $$
+
+and $N(v)$ and $N'(v)$ are the neighbors of vertex $v$ in the original and reconstructed graphs, respectively.
+
+It is evaluated on the training graph, not on the held-out edges, and is reported alongside the link-prediction metrics specifically to contrast reconstruction quality against generalization quality on the same set of embeddings.
 
 # Results and discussion
 
@@ -155,16 +169,18 @@ The RESTORE F1 score of a run is computed from the merged embeddings before any 
 
 ## Datasets
 
-CITESEER, AstroPh, and AS-Oregon are the same datasets studied in Seminar 3, whose structural statistics are reproduced below; Cit-HepPh is an additional SNAP citation network of high-energy physics phenomenology papers whose structural statistics are not reproduced here.
+Experiments are performed on four real-world graph datasets, summarized in the following table.
 
 | Dataset | Nodes | Edges | Average degree | Average clustering coefficient | Density | Modularity |
 | --- | --- | --- |--- | --- | --- | --- |
 | CITESEER | 3264 | 4536 | 2.78 | 0.145 | 0.0009 | 0.72 |
 | AstroPh | 18772 | 198110 | 21.11 | 0.631 | 0.00112 | 0.33 |
-| AS-Oregon | 11806 | 38781 | 6.57 | 0.399 | 0.00056 | 0.57 |
-Table: Structural statistics for CITESEER, AstroPh, and AS-Oregon, reproduced from Seminar 3.
+| AS-Oregon | 11806 | 38781 | 6.57 | 0.399 | 0.00056 | 0.57 | 
+| Cit-HepPh | 34546 | 420921 | 24.37 | 0.285 | 0.00071 | 0.67 |
+Table: Datasets used in the experiments.
 
-CITESEER is a citation network of scientific publications. AstroPh is a collaboration network of co-authors of astrophysics papers, and AS-Oregon is a network of autonomous systems and their peering connections; both are derived from SNAP. All four datasets are treated as static, undirected graphs, in contrast to Seminar 3's treatment of the same graphs as event streams.
+CITESEER is a citation network of scientific publications. AstroPh is a collaboration/citation network derived from SNAP, where AstroPh links co-authors of astrophysics papers. AS-Oregon is a network of autonomous systems and their peering connections. Cit-HepPh is a citation network of high-energy physics papers. These datasets vary in size and density, which allows the effect of partitioning to be observed under different community structures.
+
 
 ## Impact of partitioning strategy
 
@@ -334,7 +350,7 @@ The decoders are ordered **random forest $>$ bilinear $>$ Hadamard** in most con
 | AS-Oregon | 33.88±0.28 | 38.88±1.91 | 45.97±3.79 | 43.20±1.78 |
 Table: RESTORE F1 of the reconstruction from the merged embeddings, in percent, mean ± standard deviation over $10$ runs (values of the bilinear sweep; the other two sweeps agree within run-to-run noise since the score does not depend on the decoder).
 
-Seminar 3 evaluated partitioned embeddings by graph reconstruction. Table 11 shows the RESTORE F1 of the same embeddings used in this experiment: it *increases* with $P$ on CITESEER (35.88% $\to$ 55.68%), Cit-HepPh (54.87% $\to$ 61.59%), and AS-Oregon (33.88% $\to$ 43.20%), and is essentially flat on AstroPh apart from a small drop of about three points between $P=1$ and $P=2$. Compared with Tables 4--7, the reconstruction score and the neural-decoder link-prediction quality therefore move in *opposite directions* as the partition count grows: on CITESEER, for instance, F1 rises by more than $19$ points while the bilinear MRR falls by $60\%$. Partitioning makes each partition's local reconstruction task easier and more self-contained, which the reconstruction score rewards, whereas link prediction on held-out edges additionally requires comparing embeddings of vertices that may lie in different partitions and were trained independently.
+Table 11 shows the RESTORE F1 of the embeddings used in this experiment: it *increases* with $P$ on CITESEER (35.88% $\to$ 55.68%), Cit-HepPh (54.87% $\to$ 61.59%), and AS-Oregon (33.88% $\to$ 43.20%), and is essentially flat on AstroPh apart from a small drop of about three points between $P=1$ and $P=2$. Compared with Tables 4--7, the reconstruction score and the neural-decoder link-prediction quality therefore move in *opposite directions* as the partition count grows: on CITESEER, for instance, F1 rises by more than $19$ points while the bilinear MRR falls by $60\%$. Partitioning makes each partition's local reconstruction task easier and more self-contained, which the reconstruction score rewards, whereas link prediction on held-out edges additionally requires comparing embeddings of vertices that may lie in different partitions and were trained independently.
 
 The pooled Spearman correlation between the per-run F1 and MRR is positive and significant for all three decoders (bilinear $\rho = 0.62$, Hadamard $\rho = 0.65$, RDF $\rho = 0.72$, $n = 160$ each, $p < 10^{-17}$), but this does not contradict the opposite trends above: it is dominated by differences between datasets (graphs that are easy to embed score high on both), while, within a dataset, the partition count pushes the two quantities apart. Reconstruction F1 is therefore a reasonable indicator of how learnable a graph is, but not a reliable proxy for how well partitioned embeddings support link prediction.
 
@@ -352,6 +368,6 @@ This paper studied how graph partitioning and the choice of link-prediction deco
 
 Partitioning strongly degrades the neural decoders: from $P=1$ to $P=8$ the MRR of the bilinear decoder decreases by $39$--$60\%$ (significantly at $11$ of $12$ steps) and that of the Hadamard decoder by $8$--$39\%$, mostly in the first step. The random forest is far less sensitive: its MRR changes between $+4\%$ and $-26\%$, with $5$ of $12$ steps significant, the decline being confined to CITESEER and Cit-HepPh and to the first two doublings of $P$. Consequently, the decoders are ordered random forest $>$ bilinear $>$ Hadamard in most configurations, with the bilinear decoder best only on unpartitioned dense graphs. In a preliminary single-dataset comparison, LPA gave clearly better link prediction than LFM at every partition count tested. Finally, the reconstruction F1 of the same embeddings *increases* with the partition count on three of the four datasets while neural-decoder link-prediction quality decreases, so reconstruction quality is not a reliable proxy for downstream link-prediction quality in a partitioned embedding pipeline, a distinction that Seminar 3's reconstruction-only study could not surface.
 
-Future work should (a) repeat the ranking evaluation with random tie-breaking, (b) split the test pairs into within-partition and cross-partition pairs to test directly whether cross-partition pairs cause the degradation, (c) tune the neural decoders per partition count and consider aligning the per-partition embedding spaces (for instance by a learned linear map) before decoding, (d) extend the LFM/LPA comparison and the decoder study to the remaining Seminar 3 datasets (DBLP, Enron), and (e) study the replication factor, which lets a vertex be embedded in several partitions, as a means to recover link-prediction quality.
+Future work should (a) repeat the ranking evaluation with random tie-breaking, (b) split the test pairs into within-partition and cross-partition pairs to test directly whether cross-partition pairs cause the degradation, (c) tune the neural decoders per partition count and consider aligning the per-partition embedding spaces (for instance by a learned linear map) before decoding, (d) extend the LFM/LPA comparison and the decoder study to more datasets, and (e) study the replication factor, which lets a vertex be embedded in several partitions, as a means to recover link-prediction quality.
 
 # References
