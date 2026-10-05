@@ -208,70 +208,70 @@ Table 3 also shows, for LPA, that accuracy falls from 0.9209 at $P=1$ to 0.6681 
 
 ## Effect of the partition count on link prediction
 
-Tables 4--7 report the ranking metrics of the three decoders for every dataset and partition count. Hits@$k$ is the fraction of held-out positive edges ranked within the top $k$ among $500$ negative candidates, and MRR is the mean reciprocal rank (Methods).
+Tables 4--7 report the ranking metrics of the three decoders for every dataset and partition count. Hits@$k$ is the fraction of held-out positive edges ranked within the top $k$ among $500$ negative candidates, and MRR is the mean reciprocal rank (Methods). Boldface indicates the best performance for each dataset and partition count.
 
 | Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
 |------------------|-------------|----------------|----------------|----------------|----------------|
 | CITESEER | Bilinear | 27.61±1.82 | 17.90±1.80 | 13.80±0.71 | 10.94±1.17 |
 | CITESEER | Hadamard | 22.92±2.80 | 13.88±1.88 | 12.49±1.37 | 13.87±1.66 |
-| CITESEER | RDF | 32.27±1.47 | 28.02±2.03 | 24.75±1.77 | 23.99±1.37 |
-| AstroPh | Bilinear | 68.74±1.32 | 51.03±1.55 | 45.19±2.19 | 39.64±2.28 |
+| CITESEER | RDF | **32.27±1.47** | **28.02±2.03** | **24.75±1.77** | **23.99±1.37** |
+| AstroPh | Bilinear | **68.74±1.32** | 51.03±1.55 | 45.19±2.19 | 39.64±2.28 |
 | AstroPh | Hadamard | 32.34±4.13 | 26.84±3.22 | 28.24±1.63 | 29.63±2.50 |
-| AstroPh | RDF | 62.73±1.28 | 62.05±1.87 | 62.70±1.40 | 61.95±0.91 |
-| Cit-HepPh | Bilinear | 62.95±1.13 | 44.85±3.05 | 39.60±2.81 | 36.91±2.02 |
+| AstroPh | RDF | 62.73±1.28 | **62.05±1.87** | **62.70±1.40** | **61.95±0.91** |
+| Cit-HepPh | Bilinear | **62.95±1.13** | 44.85±3.05 | 39.60±2.81 | 36.91±2.02 |
 | Cit-HepPh | Hadamard | 37.05±2.79 | 28.38±1.22 | 27.15±1.43 | 32.15±1.98 |
-| Cit-HepPh | RDF | 53.23±0.97 | 49.86±1.59 | 47.96±0.75 | 47.55±1.08 |
+| Cit-HepPh | RDF | 53.23±0.97 | **49.86±1.59** | **47.96±0.75** | **47.55±1.08** |
 | AS-Oregon | Bilinear | 25.08±0.95 | 18.69±1.05 | 15.96±1.51 | 15.34±1.63 |
 | AS-Oregon | Hadamard | 14.48±1.68 | 10.47±0.78 | 9.12±1.08 | 9.97±0.86 |
-| AS-Oregon | RDF | 43.26±1.49 | 46.25±1.68 | 46.09±1.69 | 45.13±1.13 |
+| AS-Oregon | RDF | **43.26±1.49** | **46.25±1.68** | **46.09±1.69** | **45.13±1.13** |
 Table: Mean reciprocal rank (MRR), in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
 | Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
 |------------------|-------------|----------------|----------------|----------------|----------------|
 | CITESEER | Bilinear | 17.70±1.14 | 11.08±1.79 | 8.08±0.99 | 5.76±1.10 |
 | CITESEER | Hadamard | 14.37±2.65 | 8.21±1.77 | 7.64±1.59 | 9.38±1.50 |
-| CITESEER | RDF | 23.91±1.43 | 21.55±1.96 | 18.79±1.72 | 18.28±1.61 |
-| AstroPh | Bilinear | 56.79±1.58 | 38.54±1.70 | 32.57±2.29 | 27.68±2.34 |
+| CITESEER | RDF | **23.91±1.43** | **21.55±1.96** | **18.79±1.72** | **18.28±1.61** |
+| AstroPh | Bilinear | **56.79±1.58** | 38.54±1.70 | 32.57±2.29 | 27.68±2.34 |
 | AstroPh | Hadamard | 20.73±3.46 | 16.93±2.98 | 18.53±1.79 | 19.56±2.49 |
-| AstroPh | RDF | 54.44±1.42 | 53.86±1.85 | 54.79±1.53 | 53.81±1.38 |
-| Cit-HepPh | Bilinear | 48.38±1.47 | 31.05±2.81 | 27.10±2.54 | 24.90±1.91 |
+| AstroPh | RDF | 54.44±1.42 | **53.86±1.85** | **54.79±1.53** | **53.81±1.38** |
+| Cit-HepPh | Bilinear | **48.38±1.47** | 31.05±2.81 | 27.10±2.54 | 24.90±1.91 |
 | Cit-HepPh | Hadamard | 22.45±2.49 | 17.08±1.24 | 16.08±1.42 | 19.93±1.69 |
-| Cit-HepPh | RDF | 40.31±0.92 | 37.57±1.81 | 35.82±1.05 | 35.31±1.32 |
+| Cit-HepPh | RDF | 40.31±0.92 | **37.57±1.81** | **35.82±1.05** | **35.31±1.32** |
 | AS-Oregon | Bilinear | 14.99±1.07 | 9.70±1.23 | 7.83±1.13 | 7.57±1.40 |
 | AS-Oregon | Hadamard | 6.99±1.44 | 4.92±0.73 | 4.08±0.88 | 4.49±0.91 |
-| AS-Oregon | RDF | 38.06±1.60 | 41.44±1.77 | 41.58±1.75 | 40.47±1.08 |
+| AS-Oregon | RDF | **38.06±1.60** | **41.44±1.77** | **41.58±1.75** | **40.47±1.08** |
 Table: Hits@1, in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
 | Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
 |------------------|-------------|----------------|----------------|----------------|----------------|
 | CITESEER | Bilinear | 32.25±2.93 | 19.69±1.80 | 15.54±1.02 | 12.01±1.69 |
 | CITESEER | Hadamard | 25.94±3.57 | 15.56±2.43 | 13.75±1.36 | 15.67±1.49 |
-| CITESEER | RDF | 35.70±2.07 | 30.40±2.22 | 26.91±2.05 | 26.14±1.59 |
-| AstroPh | Bilinear | 77.48±1.50 | 58.30±2.02 | 51.70±2.66 | 44.71±3.24 |
+| CITESEER | RDF | **35.70±2.07** | **30.40±2.22** | **26.91±2.05** | **26.14±1.59** |
+| AstroPh | Bilinear | **77.48±1.50** | 58.30±2.02 | 51.70±2.66 | 44.71±3.24 |
 | AstroPh | Hadamard | 36.65±4.97 | 29.82±3.68 | 30.90±1.76 | 32.72±2.94 |
-| AstroPh | RDF | 66.61±1.61 | 66.12±2.10 | 66.49±1.64 | 65.79±0.88 |
-| Cit-HepPh | Bilinear | 73.21±1.82 | 51.77±4.09 | 45.33±4.16 | 42.48±2.77 |
+| AstroPh | RDF | 66.61±1.61 | **66.12±2.10** | **66.49±1.64** | **65.79±0.88** |
+| Cit-HepPh | Bilinear | **73.21±1.82** | 51.77±4.09 | 45.33±4.16 | 42.48±2.77 |
 | Cit-HepPh | Hadamard | 43.07±3.61 | 32.01±1.33 | 30.70±1.90 | 37.74±2.51 |
-| Cit-HepPh | RDF | 59.91±1.30 | 55.79±1.55 | 53.65±1.59 | 53.51±1.42 |
+| Cit-HepPh | RDF | 59.91±1.30 | **55.79±1.55** | **53.65±1.59** | **53.51±1.42** |
 | AS-Oregon | Bilinear | 29.22±1.24 | 21.21±1.34 | 17.64±1.63 | 16.60±2.03 |
 | AS-Oregon | Hadamard | 15.45±2.20 | 10.43±1.09 | 9.12±1.22 | 10.19±1.17 |
-| AS-Oregon | RDF | 44.35±1.48 | 47.14±1.69 | 46.99±1.70 | 46.25±1.53 |
+| AS-Oregon | RDF | **44.35±1.48** | **47.14±1.69** | **46.99±1.70** | **46.25±1.53** |
 Table: Hits@3, in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
 | Dataset | Decoder | P=1 | P=2 | P=4 | P=8 |
 |------------------|-------------|----------------|----------------|----------------|----------------|
 | CITESEER | Bilinear | 47.37±3.50 | 30.71±2.55 | 24.50±1.34 | 20.73±1.73 |
 | CITESEER | Hadamard | 38.96±3.50 | 24.46±2.45 | 21.52±1.72 | 21.39±2.55 |
-| CITESEER | RDF | 48.23±2.61 | 39.67±2.87 | 35.59±2.35 | 34.02±2.01 |
-| AstroPh | Bilinear | 89.91±0.78 | 74.46±1.37 | 69.70±1.91 | 63.97±2.55 |
+| CITESEER | RDF | **48.23±2.61** | **39.67±2.87** | **35.59±2.35** | **34.02±2.01** |
+| AstroPh | Bilinear | **89.91±0.78** | 74.46±1.37 | 69.70±1.91 | 63.97±2.55 |
 | AstroPh | Hadamard | 55.58±5.68 | 46.86±4.04 | 47.57±2.19 | 49.85±2.50 |
-| AstroPh | RDF | 78.96±1.45 | 77.90±2.41 | 77.85±1.23 | 77.67±0.97 |
-| Cit-HepPh | Bilinear | 89.85±0.56 | 72.40±3.12 | 64.52±2.83 | 60.36±2.20 |
+| AstroPh | RDF | 78.96±1.45 | **77.90±2.41** | **77.85±1.23** | **77.67±0.97** |
+| Cit-HepPh | Bilinear | **89.85±0.56** | 72.40±3.12 | 64.52±2.83 | 60.36±2.20 |
 | Cit-HepPh | Hadamard | 67.77±3.84 | 52.46±1.58 | 50.80±1.67 | 57.23±2.52 |
-| Cit-HepPh | RDF | 79.78±1.24 | 74.61±1.66 | 72.98±1.27 | 72.38±1.37 |
+| Cit-HepPh | RDF | 79.78±1.24 | **74.61±1.66** | **72.98±1.27** | **72.38±1.37** |
 | AS-Oregon | Bilinear | 45.39±1.44 | 36.97±1.19 | 32.74±3.00 | 31.59±2.28 |
 | AS-Oregon | Hadamard | 29.62±2.72 | 21.46±1.93 | 18.50±2.07 | 20.43±1.33 |
-| AS-Oregon | RDF | 53.71±1.27 | 55.58±1.82 | 54.53±1.55 | 53.72±1.45 |
+| AS-Oregon | RDF | **53.71±1.27** | **55.58±1.82** | **54.53±1.55** | **53.72±1.45** |
 Table: Hits@10, in percent, mean ± standard deviation over $10$ runs, LPA partitioning.
 
 The three decoders respond to partitioning very differently, and the pattern is the same for all four ranking metrics.
@@ -284,10 +284,10 @@ The three decoders respond to partitioning very differently, and the pattern is 
 
 | Dataset | Bilinear | Hadamard | RDF |
 |---|---|---|---|
-| CITESEER | -60% | -39% | -26% |
-| AstroPh | -42% | -8% | -1% |
-| Cit-HepPh | -41% | -13% | -11% |
-| AS-Oregon | -39% | -31% | +4% |
+| CITESEER | -60% | -39% | **-26%** |
+| AstroPh | -42% | -8% | **-1%** |
+| Cit-HepPh | -41% | -13% | **-11%** |
+| AS-Oregon | -39% | -31% | **+4%** |
 Table: Relative change of the mean MRR from $P=1$ to $P=8$, per decoder.
 
 Table 8 summarizes the effect as the relative change of the mean MRR between $P=1$ and $P=8$: the bilinear decoder loses $39$--$60\%$ of its MRR, the Hadamard decoder $8$--$39\%$, and the random forest between $+4\%$ and $-26\%$.
